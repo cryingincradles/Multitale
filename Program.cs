@@ -112,6 +112,8 @@ class Program
             return;
         }
 
+        Console.WriteLine("\n");
+
         string LogsPath = filePath;
         const string ResultsPath = "./results";
         DateTime StartTime = DateTime.Now;
@@ -149,5 +151,8 @@ class Program
                 }
             });
         }
+
+        Console.WriteLine(" # Process ended. Press any key to exit...");
+        Console.ReadKey();
     }
 }
