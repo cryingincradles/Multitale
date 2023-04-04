@@ -8,7 +8,7 @@ I, the creator, am not responsible for any actions, and or damages, caused by th
 
 ## Requirements
 
-It is required to have .NET 6.0 Runtime installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+It is required to have .NET 6.0 SDK installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/6.0
 
 ## How does it works
 
