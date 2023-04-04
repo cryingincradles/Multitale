@@ -238,7 +238,17 @@ public class Parsers
                 Secret.Mnemonics = new();
                 Secret.PrivateKeys = new();
 
-                var MnemonicExp = new System.Text.RegularExpressions.Regex("^([a-z]+ ){11}[a-z]+$|^([a-z]+ ){14}[a-z]+$|^([a-z]+ ){17}[a-z]+$|^([a-z]+ ){20}[a-z]+$|^([a-z]+ ){23}[a-z]+$");
+                var MnemonicExp = new string("^([a-z]+ ){11}[a-z]+$|^([a-z]+ ){14}[a-z]+$|^([a-z]+ ){17}[a-z]+$|^([a-z]+ ){20}[a-z]+$|^([a-z]+ ){23}[a-z]+$");
+                var PrivateKeyExp = new string("^(0x)?[0-9a-fA-F]{64}$");
+
+                MatchCollection MnemonicMatches = System.Text.RegularExpressions.Regex.Matches(decryptedString, MnemonicExp);
+                MatchCollection PrivateKeyMatches = System.Text.RegularExpressions.Regex.Matches(decryptedString, PrivateKeyExp);
+
+                if (MnemonicMatches.Count > 0) 
+                    MnemonicMatches.ToList().ForEach(match => Secret.Mnemonics.Add(new() { Type = "Unknown", Value = match.Value } ));
+
+                if (PrivateKeyMatches.Count > 0)
+                    PrivateKeyMatches.ToList().ForEach(match => Secret.PrivateKeys.Add(new() { Type = "Unknown", Value = match.Value } ));
             }
 
             catch (Exception)
