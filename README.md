@@ -8,8 +8,8 @@ I, the creator, am not responsible for any actions, and or damages, caused by th
 
 ## Requirements
 
-Tested OS: Windows 10 (PC and Server), Windows 11. Errors may occur on previous systems
-Tested .NET: SDK 6.0.310. Errors may occur on previous versions
+* Tested OS: Windows 10 (PC and Server), Windows 11. Errors may occur on previous systems
+* Tested .NET: SDK 6.0.310. Errors may occur on previous versions
 It is required to have .NET 6.0 SDK installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/6.0
 
 ## How does it works
