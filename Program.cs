@@ -1,5 +1,7 @@
 ﻿#pragma warning disable CS0649
 
+using Pastel;
+
 public class Structures
 {
     public enum Types
@@ -91,15 +93,22 @@ class Program
 {
     public static void Main()
     {
-        Console.WriteLine("Please, write down path to logs:");
+        Console.WriteLine(("" +
+            "  __  __      _ _   _ _        _     \r\n " +
+            "|  \\/  |_  _| | |_|_| |_ __ _| |___ \r\n " +
+            "| |\\/| | || | |  _| |  _/ _` | / -_)\r\n " +
+            "|_|  |_|\\_,_|_|\\__|_|\\__\\__,_|_\\___|\r\n").Pastel(System.Drawing.Color.OrangeRed) +
+            " v0.1 alpha\r\n".Pastel(System.Drawing.Color.Orange));
+
+        Console.Write(" # Please, write down path to logs: ");
         string? filePath = Console.ReadLine();
 
         if (!Directory.Exists(filePath))
         {
             if (filePath is null)
-                Console.WriteLine("Path is NULL, try again");
+                Console.WriteLine(" ! Path is NULL, try again");
             else
-                Console.WriteLine("Folder not found...");
+                Console.WriteLine("! Folder not found...");
             return;
         }
 
