@@ -15,12 +15,13 @@ public class Recorders
                 {
                     using var writer = new StreamWriter(stream);
                     writer.Write(NewData);
+                    stream.Close();
                 }
 
                 return true;
             }
 
-            catch (Exception)
+            catch (Exception e)
             {
                 return false;
             }
