@@ -8,7 +8,7 @@ It is required to have .NET 6.0 Runtime installed in order to compile and run th
 
 ## How does it works
 
-1. First of all compile or run compiled program
+1. First of all compile & run or run compiled program
 2. Copy & Paste path to work folder
 3. Wait for results in the program directory
 
@@ -17,3 +17,4 @@ It is required to have .NET 6.0 Runtime installed in order to compile and run th
 1. Nethereum
 2. Org.BouncyCastle
 3. Pastel
+4. Newtonsoft.Json
