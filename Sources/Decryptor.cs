@@ -135,14 +135,13 @@ public class Decryptor
                 if (CachedPassword is not null) Password = CachedPassword;
 
                 var DecryptedString = DecryptVault(Password, EncryptedVault.Salt, EncryptedVault.IV, EncryptedVault.Data);
-                Console.WriteLine(DecryptedString);
 
                 if (DecryptedString is null)
                 {
                     if (Password == passwords[^1])
                     {
                         DateTime TryTime = DateTime.Now;
-                        Console.WriteLine($"[{TryTime:H:mm:ss}]\t{"Path:".Pastel(ConsoleColor.Yellow)} {EncryptedVault.Path}\n\t\t{("Data:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Data}\n\t\t{("IV:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.IV}\n\t\t{("Salt:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Salt}\n\t\t{("MSG:".Pastel(ConsoleColor.Yellow))} {("No valid password found".Pastel(ConsoleColor.Red))}\n");
+                        Console.WriteLine($" [{TryTime:H:mm:ss}]\t{"Path:".Pastel(ConsoleColor.Yellow)} {EncryptedVault.Path}\n\t\t{("Data:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Data}\n\t\t{("IV:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.IV}\n\t\t{("Salt:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Salt}\n\t\t{("MSG:".Pastel(ConsoleColor.Yellow))} {("No valid password found".Pastel(ConsoleColor.Red))}\n");
                     }
                 }
 
@@ -184,10 +183,10 @@ public class Decryptor
             }
         }
 
-        if (CachedPassword is null) return null;
+        if (Secret.PrivateKeys.Count == 0 && Secret.Mnemonics.Count == 0) return null;
 
         DateTime CurrentTime = DateTime.Now;
-        string OutputTime = $"[{CurrentTime:H:mm:ss}]";
+        string OutputTime = $" [{CurrentTime:H:mm:ss}]";
         string OutputPath = $"{"Path:".Pastel(ConsoleColor.Yellow)} {path}";
         string OutputType = $"{"Type:".Pastel(ConsoleColor.Yellow)} {CachedType}";
         string OutputMnemonics = $"{$"Phrases ({Secret.Mnemonics.Count}):".Pastel(ConsoleColor.Yellow)} {(Secret.Mnemonics.Count == 0 ? "None" : string.Join($"\n\t\t\t{string.Concat(Enumerable.Repeat(" ", Secret.Mnemonics.Count.ToString().Length))}    ", Secret.Mnemonics.Select(el => el.Value).ToArray()))}";
