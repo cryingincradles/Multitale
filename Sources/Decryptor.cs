@@ -15,12 +15,12 @@ public class Decryptor
 
         if (pathName is not null)
         {
-            Structures.Types type = pathName switch
+            Structures.Types type = pathName.ToLower() switch
             {
                 string s when s.Length < 2 => Structures.Types.Unknown,
-                string s when s.Contains("Binance") => Structures.Types.Binance,
-                string s when s.Contains("Ronin") => Structures.Types.Ronin,
-                string s when s.Contains("Metamask") => Structures.Types.Metamask,
+                string s when s.Contains("binance") => Structures.Types.Binance,
+                string s when s.Contains("ronin") => Structures.Types.Ronin,
+                string s when s.Contains("metamask") => Structures.Types.Metamask,
                 _ => Structures.Types.Unknown,
             };
 
