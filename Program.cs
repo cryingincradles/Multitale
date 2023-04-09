@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS0649
 
+using Newtonsoft.Json.Linq;
 using Pastel;
 
 public class Structures
@@ -91,6 +92,12 @@ public class Structures
 
 class Program 
 {
+    public static void EndHolder()
+    {
+        Console.WriteLine(" # Process ended. Press any key to exit...");
+        Console.ReadKey();
+    }
+
     public static void Main()
     {
         Console.WriteLine(("" +
@@ -108,51 +115,20 @@ class Program
             if (filePath is null)
                 Console.WriteLine(" ! Path is NULL, try again");
             else
-                Console.WriteLine("! Folder not found...");
+                Console.WriteLine(" ! Folder not found...");
+
+            EndHolder();
             return;
         }
 
-        Console.WriteLine("\n");
-
-        string LogsPath = filePath;
-        const string ResultsPath = "./results";
         DateTime StartTime = DateTime.Now;
-        var CryptoFiles = Decryptor.FindVaultFiles(LogsPath);
+        string LogsPath = filePath;
+        string ResultsPath = "./results";
+        string RecordPath = $"{ResultsPath}/{StartTime:dd.MM.yyyy} ({StartTime:H-mm-ss})";
+        
+        Decryptor.Call(LogsPath, ResultsPath, RecordPath);
 
-        if (CryptoFiles is not null)
-        {
-            CryptoFiles.ForEach(File =>
-            {
-                try
-                {
-                    var Passwords = Utils.FindPasswords(LogsPath, Path.GetDirectoryName(File));
-                    if (Passwords is not null)
-                    {
-                        var Secret = Decryptor.Decrypt(File, Passwords);
-
-                        if (Secret is not null)
-                        {
-                            string RecordPath = $"{ResultsPath}/{StartTime:dd.MM.yyyy} ({StartTime:H-mm-ss})";
-                            string RecordType = "Decryptor";
-                            string RecordFullPath = $"{RecordPath}/{RecordType}";
-
-                            Utils.TryCreateDirectory(ResultsPath);
-                            Utils.TryCreateDirectory(RecordPath);
-                            Utils.TryCreateDirectory(RecordFullPath);
-
-                            Recorders.Universal.Record(RecordFullPath, Secret.Value);
-                        }
-                    }
-                }
-
-                catch (Exception)
-                {
-
-                }
-            });
-        }
-
-        Console.WriteLine(" # Process ended. Press any key to exit...");
-        Console.ReadKey();
+        Console.WriteLine("\n");
+        EndHolder();
     }
 }
