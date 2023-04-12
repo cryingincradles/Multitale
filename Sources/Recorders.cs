@@ -1,4 +1,5 @@
-﻿using static Structures;
+﻿using Newtonsoft.Json.Linq;
+using static Structures;
 using static Structures.Vault;
 
 public class Recorders
@@ -7,7 +8,7 @@ public class Recorders
     {
         public static void RewriteDuplicates(string filePath)
         {
-            SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
+            SemaphoreSlim semaphore = new(0, 1);
 
             while (true)
             {
@@ -16,16 +17,13 @@ public class Recorders
                     var Data = File.ReadAllText(filePath).Split("\n");
                     var NewData = string.Join("\n", Data.Distinct().ToList());
 
-                    using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        using var writer = new StreamWriter(fs);
-                        writer.Write(NewData);
-                        break;
-                    }
+                    using FileStream fs = new(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+                    using var writer = new StreamWriter(fs);
+                    writer.Write(NewData);
+                    break;
                 }
                 catch (IOException)
                 {
-                    // Файл недоступен, ждем
                     ThreadPool.QueueUserWorkItem(_ => semaphore.Wait());
                 }
             }
@@ -35,7 +33,9 @@ public class Recorders
 
         public static void WriteValues(List<string> values, string savePath, Structures.Types type)
         {
-            SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
+            SemaphoreSlim semaphore = new(0, 1);
+            var Settings = new Utils.IniFile("Settings.ini");
+            bool WriteTypes = Settings.Read("Recorder", "WriteTypes") == "True";
 
             while (true)
             {
@@ -49,8 +49,12 @@ public class Recorders
                     uniqueValues.ForEach(value =>
                     {
                         File.AppendAllText(savePath, $"{value}\n");
-                        Utils.TryCreateDirectory($"{Path.GetDirectoryName(savePath)}/{type}");
-                        File.AppendAllText($"{Path.GetDirectoryName(savePath)}/{type}/{Path.GetFileName(savePath)}", $"{value}\n");
+
+                        if (WriteTypes is true)
+                        {
+                            Utils.TryCreateDirectory($"{Path.GetDirectoryName(savePath)}/{type}");
+                            File.AppendAllText($"{Path.GetDirectoryName(savePath)}/{type}/{Path.GetFileName(savePath)}", $"{value}\n");
+                        };
                     });
 
                     break;
@@ -64,7 +68,7 @@ public class Recorders
             semaphore.Release();
 
             RewriteDuplicates(savePath);
-            RewriteDuplicates($"{Path.GetDirectoryName(savePath)}/{type}/{Path.GetFileName(savePath)}");
+            if (WriteTypes is true) RewriteDuplicates($"{Path.GetDirectoryName(savePath)}/{type}/{Path.GetFileName(savePath)}");
         }
 
         public static bool Record(string SavePath, Vault.Secret Secret)

