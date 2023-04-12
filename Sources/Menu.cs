@@ -12,7 +12,7 @@ public class Menu
 
             var Settings = new Utils.IniFile("Settings.ini");
             string? Path = Settings.Read("Main", "LastPath");
-            string Output = $" {"# MAIN MENU".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Use keys for choosing (example - 1. is equal \"1\" button)"} \n\n {(Path is null || Path == "" ? $"{"1. Launch".Pastel(ConsoleColor.DarkGray)} {"[path not set]".Pastel(ConsoleColor.Red)}" : "1. Launch")}\n 2. Settings";
+            string Output = $" {"# MAIN MENU".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Use keys for choosing (example - 1. is equal \"1\" button)".Pastel(ConsoleColor.Gray)} \n\n {(Path is null || Path == "" ? $"{"1. Launch".Pastel(ConsoleColor.DarkGray)} {"[path not set]".Pastel(ConsoleColor.Red)}" : "1. Launch")}\n 2. Settings";
             Console.WriteLine(Output);
 
             while (true)
