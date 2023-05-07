@@ -11,7 +11,7 @@ public class Menu
             Utils.ClearAndShow();
             Console.Title = "Multitale ~";
             
-            string Output = $" {"# MAIN MENU".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Use keys for choosing (example - 1. is equal \"1\" button)".Pastel(ConsoleColor.Gray)} \n\n 1. Launch\n 2. Settings";
+            string Output = $" {"# MAIN MENU".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Use keys for choosing (example - 1. is equal \"1\" button)".Pastel(ConsoleColor.Gray)} \n\n 1. Launch\n 2. Settings\n 3. About & Support";
             Console.WriteLine(Output);
 
             while (true)
@@ -21,11 +21,40 @@ public class Menu
 
                 switch (KeyName)
                 {
+                    case ConsoleKey.D3:
+                        About.Show();
+                        return;
                     case ConsoleKey.D2:
                         Settings.Show();
                         return;
                     case ConsoleKey.D1:
                         Launch.Show();
+                        return;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    public class About
+    {
+        public static void Show()
+        {
+            Utils.ClearAndShow();
+
+            string OutputText = $" {"# MAIN MENU > ABOUT".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Press ESC if you want to go back".Pastel(ConsoleColor.Gray)}\n\n I decided to make a project that could interest both me and people who know what it is for.\n Looking at different resources I noticed that most of the projects related to cryptocurrency are paid,\n so I wanted to try to make something that could be redesigned for myself\n and supplemented by any developer who would like to try himself in this field.\n C# is not my programming language, this project is a result of research of work and structure of cryptocurrency itself,\n so if something doesn't start, doesn't work, breaks, please write me about it\n\n {"DEVELOPER".Pastel(System.Drawing.Color.OrangeRed)}\n {"Username:".Pastel(ConsoleColor.Yellow)} cradles\n {"Contact:".Pastel(ConsoleColor.Yellow)} https://t.me/cryingincradles\n\n {"DONATION & SUPPORT".Pastel(System.Drawing.Color.OrangeRed)}\n {"Forum:".Pastel(ConsoleColor.Yellow)} https://zelenka.guru/cradles/\n {"BTC:".Pastel(ConsoleColor.Yellow)} bc1ql3thytsud4x9nulym3xkpmppv5eh8cj84tqsnp\n {"ETH:".Pastel(ConsoleColor.Yellow)} 0x375c1A4CcC41FcB2d35122aDDA008A8ecD384333\n {"LTC:".Pastel(ConsoleColor.Yellow)} LaX2ZRgDwAWqsYhHLvZDc3xYz1sA2LEFuM";
+            Console.WriteLine(OutputText);
+
+            while (true)
+            {
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                var KeyName = keyInfo.Key;
+
+                switch (KeyName)
+                {
+                    case ConsoleKey.Escape:
+                        Main.Show();
                         return;
                     default:
                         break;
