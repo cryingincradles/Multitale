@@ -1,6 +1,6 @@
 # 🔑 Multitale
 
-Cryptocurrency wallet decryption program written in C# .NET 6.0
+Cryptocurrency wallet tool program written in C# .NET 6.0
 
 ## Disclaimer
 
@@ -16,7 +16,7 @@ It is required to have .NET 6.0 SDK installed in order to compile and run the pr
 ## How does it works
 
 1. First of all compile & run or run compiled program
-2. Copy & Paste path to work folder
+2. Copy & Paste path to work & proxy folder in the settings
 3. Wait for results in the program directory
 
 ## Used Libs
@@ -25,3 +25,5 @@ It is required to have .NET 6.0 SDK installed in order to compile and run the pr
 2. Org.BouncyCastle
 3. Pastel
 4. Newtonsoft.Json
+5. PuppeteerSharp
+6. Leaf.xNet
