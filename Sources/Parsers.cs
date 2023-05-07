@@ -19,7 +19,7 @@ public class Parsers
             Salt = "\"salt\":\"(.*?)\""
         };
 
-        private static Func<string, Vault.Secret> _ParseFunc = (decryptedString) => 
+        private static Func<string, Secret> _ParseFunc = (decryptedString) => 
         {
             var Secret = new Secret();
 
@@ -52,7 +52,7 @@ public class Parsers
                         {
                             for (int i = 1; i < (int)Object["data"]["numberOfAccounts"]; i++)
                             {
-                                Secret.PrivateKeys.Add(new Structures.PrivateKey()
+                                Secret.PrivateKeys.Add(new PrivateKey()
                                 {
                                     Type = "Default",
                                     Value = new Nethereum.HdWallet.Wallet(Mnemonic.Value, null).GetAccount(i).PrivateKey,
@@ -70,7 +70,7 @@ public class Parsers
                     {
                         foreach (var ObjectKey in Object["data"])
                         {
-                            Secret.PrivateKeys.Add(new Structures.PrivateKey() { Type = "Default", Value = ObjectKey.ToString() });
+                            Secret.PrivateKeys.Add(new PrivateKey() { Type = "Default", Value = ObjectKey.ToString() });
                         }
                     }
 
@@ -99,7 +99,7 @@ public class Parsers
             Salt = "\"salt\":\"(.*?)\""
         };
 
-        private static Func<string, Vault.Secret> _ParseFunc = (decryptedString) =>
+        private static Func<string, Secret> _ParseFunc = (decryptedString) =>
         {
             var Secret = new Secret();
 
@@ -107,7 +107,7 @@ public class Parsers
             {
                 Secret.Mnemonics = new();
                 Secret.PrivateKeys = new();
-                decryptedString = decryptedString.Substring(1, decryptedString.Length - 2).Replace("\\", "");
+                decryptedString = decryptedString[1..^1].Replace("\\", "");
 
                 if (decryptedString.StartsWith("0x")) Secret.PrivateKeys.Add(new() { Type = "Default", Value = decryptedString });
 
@@ -121,8 +121,8 @@ public class Parsers
                     {
                         string SMnemonic = DataObject["mnemonic"].ToString();
                         string SPrivateKey = new Nethereum.HdWallet.Wallet(SMnemonic, null).GetAccount((int)DataObject["totalAccount"]).PrivateKey;
-                        Structures.Mnemonic Mnemonic = new() { Type = "Default", Value = SMnemonic };
-                        Structures.PrivateKey PrivateKey = new()
+                        Mnemonic Mnemonic = new() { Type = "Default", Value = SMnemonic };
+                        PrivateKey PrivateKey = new()
                         {
                             Type = "Default",
                             Value = SPrivateKey,
@@ -159,7 +159,7 @@ public class Parsers
             Salt = "\"salt\":\"(.*?)\""
         };
 
-        private static Func<string, Vault.Secret> _ParseFunc = (decryptedString) =>
+        private static Func<string, Secret> _ParseFunc = (decryptedString) =>
         {
             var Secret = new Secret();
 
@@ -192,7 +192,7 @@ public class Parsers
                                 if (ObjectType == "imported") AddressType = "BBC";
                                 else AddressType = "BBC";
 
-                                Structures.PrivateKey PrivateKey = new() { Type = AddressType, Value = AddressObject["privateKey"].ToString().Trim() };
+                                PrivateKey PrivateKey = new() { Type = AddressType, Value = AddressObject["privateKey"].ToString().Trim() };
                                 if (!Secret.PrivateKeys.Contains(PrivateKey)) Secret.PrivateKeys.Add(PrivateKey);
                             }
                         }
@@ -229,7 +229,7 @@ public class Parsers
             Salt = "\"salt\":\"(.*?)\""
         };
 
-        private static readonly Func<string, Vault.Secret> _ParseFunc = (decryptedString) =>
+        private static readonly Func<string, Secret> _ParseFunc = (decryptedString) =>
         {
             var Secret = new Secret();
 
@@ -241,13 +241,16 @@ public class Parsers
                 var MnemonicExp = new string("^([a-z]+ ){11}[a-z]+$|^([a-z]+ ){14}[a-z]+$|^([a-z]+ ){17}[a-z]+$|^([a-z]+ ){20}[a-z]+$|^([a-z]+ ){23}[a-z]+$");
                 var PrivateKeyExp = new string("^(0x)?[0-9a-fA-F]{64}$");
 
-                MatchCollection MnemonicMatches = System.Text.RegularExpressions.Regex.Matches(decryptedString, MnemonicExp);
-                MatchCollection PrivateKeyMatches = System.Text.RegularExpressions.Regex.Matches(decryptedString, PrivateKeyExp);
+                var MnemonicREXP = new System.Text.RegularExpressions.Regex(MnemonicExp, RegexOptions.Multiline);
+                var PrivateKeyREXP = new System.Text.RegularExpressions.Regex(PrivateKeyExp, RegexOptions.Multiline);
 
-                if (MnemonicMatches.Count > 0) 
+                MatchCollection MnemonicMatches = MnemonicREXP.Matches(decryptedString);
+                MatchCollection PrivateKeyMatches = PrivateKeyREXP.Matches(decryptedString);
+
+                if (MnemonicMatches?.Count > 0) 
                     MnemonicMatches.ToList().ForEach(match => Secret.Mnemonics.Add(new() { Type = "Unknown", Value = match.Value } ));
 
-                if (PrivateKeyMatches.Count > 0)
+                if (PrivateKeyMatches?.Count > 0)
                     PrivateKeyMatches.ToList().ForEach(match => Secret.PrivateKeys.Add(new() { Type = "Unknown", Value = match.Value } ));
             }
 
@@ -278,7 +281,7 @@ public class Parsers
         { Types.Unknown, new Unknown() }
     };
 
-    public static Vault.Secret Parse(Types type, string decryptedString)
+    public static Secret Parse(Types type, string decryptedString)
     {
         var Secret = new Secret();
 

