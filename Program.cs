@@ -1,10 +1,8 @@
-﻿#pragma warning disable CS0649
-
-using Pastel;
+﻿using Pastel;
 
 class Program 
 {
-    public static string CurrentRelease = "v0.2.0-alpha";
+    public static string CurrentRelease = "v0.3.0-alpha";
 
     public static void ShowLogo()
     {
@@ -18,12 +16,10 @@ class Program
 
     public static void Main()
     {
+        Console.Title = "Multitale ~";
         Console.CursorVisible = false;
         Utils.IniFile Settings = new Utils.IniFile("Settings.ini");
         if (Settings.IsEmpty()) Utils.LoadDefaults();
-
-        Settings.Write("Main", "LastVisit", DateTime.Now.ToString("dd.MM.yyyy-H:mm:ss"));
-        Settings.Write("Main", "Version", CurrentRelease);
 
         Menu.Main.Show();
     }
