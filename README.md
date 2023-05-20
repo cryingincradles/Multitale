@@ -1,6 +1,6 @@
 # 🔑 Multitale
 
-Cryptocurrency wallet tool program written in C# .NET 6.0
+Cryptocurrency wallet tool program written in C# .NET 7.0
 
 ## Disclaimer
 
@@ -8,10 +8,10 @@ I, the creator, am not responsible for any actions, and or damages, caused by th
 
 ## Requirements
 
-It is required to have .NET 6.0 SDK installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+It is required to have .NET 7.0 Runtime installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/7.0
 
-* Tested OS: Windows 10 (PC and Server), Windows 11. Errors may occur on previous systems
-* Tested .NET: SDK 6.0.310. Errors may occur on newer versions
+* Tested OS: Windows 7 (SP1) and newer, Linux
+* Tested .NET: SDK/Runtime 7.0.5. Errors may occur on older versions
 
 ## How does it works
 
@@ -23,7 +23,7 @@ It is required to have .NET 6.0 SDK installed in order to compile and run the pr
 
 1. Nethereum
 2. Org.BouncyCastle
-3. Pastel
+3. Spectre.Console
 4. Newtonsoft.Json
 5. PuppeteerSharp
 6. Leaf.xNet
