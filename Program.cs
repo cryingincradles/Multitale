@@ -1,26 +1,47 @@
-﻿using Pastel;
+﻿using Spectre.Console;
+using System.Runtime.InteropServices;
 
-class Program 
+class Program
 {
-    public static string CurrentRelease = "v0.3.0-alpha";
+    public static string CurrentRelease = "v0.4.0-alpha";
 
     public static void ShowLogo()
     {
-        Console.WriteLine(("" +
+        AnsiConsole.Write(new Markup("[royalblue1]" +
     "  __  __      _ _   _ _        _     \r\n " +
     "|  \\/  |_  _| | |_|_| |_ __ _| |___ \r\n " +
     "| |\\/| | || | |  _| |  _/ _` | / -_)\r\n " +
-    "|_|  |_|\\_,_|_|\\__|_|\\__\\__,_|_\\___|\r\n").Pastel(System.Drawing.Color.OrangeRed) +
-    $" {CurrentRelease}\r\n".Pastel(System.Drawing.Color.Orange));
+    "|_|  |_|\\_,_|_|\\__|_|\\__\\__,_|_\\___|[/]\r\n" +
+    $" {CurrentRelease}  [mediumpurple]https://t.me/multitale[/]\r\n\n"));
     }
 
     public static void Main()
     {
         Console.Title = "Multitale ~";
-        Console.CursorVisible = false;
-        Utils.IniFile Settings = new Utils.IniFile("Settings.ini");
-        if (Settings.IsEmpty()) Utils.LoadDefaults();
 
-        Menu.Main.Show();
+        bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        if (IsWindows)
+        {
+            const int DesiredWidth = 120;
+            const int DesiredHeight = 30;
+
+            Console.SetWindowSize(Math.Min(Console.LargestWindowWidth, DesiredWidth), Math.Min(Console.LargestWindowHeight, DesiredHeight));
+            Console.SetBufferSize(DesiredWidth, DesiredHeight);
+        }
+
+        try
+        {
+            Console.CursorVisible = false;
+            Utils.IniFile Settings = new Utils.IniFile("Settings.ini");
+            if (Settings.IsEmpty()) Utils.LoadDefaults();
+
+            Menu.Main.Show();
+        }
+
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
     }
 }
