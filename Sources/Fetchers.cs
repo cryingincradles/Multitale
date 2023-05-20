@@ -1,17 +1,24 @@
 ﻿using Nethereum.HdWallet;
 using Nethereum.Web3.Accounts;
 using PuppeteerSharp;
-using Pastel;
 using System.Collections.Concurrent;
 using static Structures.Balances;
 using static Structures;
 using Leaf.xNet;
 using Newtonsoft.Json.Linq;
+using Spectre.Console;
+using static Utils;
 
 public class Fetchers
 {
+    private static int DCTimeout = 450;
+    private static int DRWTimeout = 450;
+
     public class DeBank
     {
+        public bool BrowserSupported = true;
+        public bool WebSupported = true;
+
         public class BMethod
         {
             private IBrowser? browser;
@@ -259,7 +266,7 @@ public class Fetchers
                             .ToLower();
 
                         if (Name is null) continue;
-                        var IsInDebankDictionary = Structures.DeBankChains.Any(el => el.Key == Name);
+                        var IsInDebankDictionary = Structures.DeBank.BrowserChains.Any(el => el.Key == Name);
                         if (IsInDebankDictionary is true)
                         {
                             await ChainInfo.EvaluateFunctionAsync("element => element.click()");
@@ -280,8 +287,8 @@ public class Fetchers
                             var ChainPoolsChildNodes = Utils.Node.GetChildNodes(ChainPools);
                             if (ChainPoolsChildNodes is null) continue;
 
-                            var Tokens = new List<Structures.Balances.Token>();
-                            var Pools = new List<Structures.Balances.Pool>();
+                            var Tokens = new List<Token>();
+                            var Pools = new List<Pool>();
 
                             PortofolioXPath = await page.XPathAsync("/html/body/div[1]/div/div[2]/div[1]/div[3]/div");
                             var PortofolioNodes = Utils.Node.GetChildNodes(PortofolioXPath[0]);
@@ -399,12 +406,12 @@ public class Fetchers
 
                                             if (TokenName is not null && IsTokenValueParsed is true && IsTokenAmountParsed is true && TokenValue > 1)
                                             {
-                                                var Token = new Structures.Balances.Token()
+                                                var Token = new Token()
                                                 {
                                                     Name = TokenName,
                                                     Value = TokenValue,
                                                     Amount = TokenAmount,
-                                                    Chain = Structures.DeBankChains[Name]
+                                                    Chain = Structures.DeBank.BrowserChains[Name]
                                                 };
 
                                                 Tokens.Add(Token);
@@ -432,11 +439,11 @@ public class Fetchers
                                 if (IsPoolValueParsed is false) continue;
                                 if (PoolValue == 0) continue;
 
-                                var Pool = new Structures.Balances.Pool()
+                                var Pool = new Pool()
                                 {
                                     Name = PoolName,
                                     Value = PoolValue,
-                                    Chain = Structures.DeBankChains[Name]
+                                    Chain = Structures.DeBank.BrowserChains[Name]
                                 };
 
                                 Pools.Add(Pool);
@@ -445,9 +452,9 @@ public class Fetchers
                                     await ChainInfo.EvaluateFunctionAsync("element => element.click()");
                             }
 
-                            var Chain = new Structures.Balances.Chain()
+                            var Chain = new Chain()
                             {
-                                Name = Structures.DeBankChains[Name],
+                                Name = Structures.DeBank.BrowserChains[Name],
                                 Balances = new()
                                 {
                                     Value = Value,
@@ -491,7 +498,7 @@ public class Fetchers
 
         public class WMethod
         {
-            public static double? GetNetworth(string Address)
+            public static double? GetNetworth(string Address, bool ForceRetry = true)
             {
                 double? Networth = null;
 
@@ -503,8 +510,8 @@ public class Fetchers
                         var Request = new HttpRequest();
                         Request.Proxy = Utils.GetProxyClient(Proxy);
                         Request.AcceptEncoding = "none";
-                        Request.Proxy.ConnectTimeout = 450;
-                        Request.Proxy.ReadWriteTimeout = 450;
+                        Request.Proxy.ConnectTimeout = DCTimeout;
+                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
 
                         try
                         {
@@ -522,12 +529,168 @@ public class Fetchers
                     }
                 }
 
+                if (Networth is null && ForceRetry is true) 
+                {
+                    return GetNetworth(Address);
+                }
+
+                return Networth;
+            }
+
+            public static List<string>? GetUserChains(string Address, bool ForceRetry = false)
+            {
+                List<string>? UsedChains = null;
+
+                var Proxies = Utils.GrabProxiesFromSettings();
+                if (Proxies is not null)
+                {
+                    foreach (var Proxy in Proxies)
+                    {
+                        var Request = new HttpRequest();
+                        Request.Proxy = Utils.GetProxyClient(Proxy);
+                        Request.AcceptEncoding = "none";
+                        Request.Proxy.ConnectTimeout = DCTimeout;
+                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+
+                        try
+                        {
+                            var Response = Request.Get($"https://api.debank.com/user/addr?addr={Address}");
+                            var ResponseObject = JObject.Parse(Response.ToString());
+                            var ResponseUsedChains = ResponseObject["data"]?["used_chains"];
+                            if (ResponseUsedChains is not null) UsedChains = ResponseUsedChains.ToList().Select(el => el.ToString()).ToList();
+                            break;
+                        }
+
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                if (UsedChains is null && ForceRetry is true)
+                {
+                    return GetUserChains(Address, true);
+                }
+
+                return UsedChains;
+            }
+
+            public static List<Token>? GetUserChainTokens(string Address, string ChainId, bool ForceRetry = false)
+            {
+                List<Token>? Tokens = null;
+
+                var Proxies = Utils.GrabProxiesFromSettings();
+                if (Proxies is not null)
+                {
+                    foreach (var Proxy in Proxies)
+                    {
+                        var Request = new HttpRequest();
+                        Request.Proxy = Utils.GetProxyClient(Proxy);
+                        Request.AcceptEncoding = "none";
+                        Request.Proxy.ConnectTimeout = DCTimeout;
+                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+
+                        try
+                        {
+                            var Response = Request.Get($"https://api.debank.com/user/addr?addr={Address}");
+                            var ResponseObject = JObject.Parse(Response.ToString());
+                            var ResponseData = ResponseObject["data"];
+                            if (ResponseData is not null && ResponseData.HasValues)
+                                Tokens = ResponseData.ToList().Select(token => {
+                                    var Token = new Token();
+                                    var STokenAmount = token["amount"]?.ToString();
+                                    var STokenChain = token["chain"]?.ToString();
+                                    var STokenPrice = token["price"]?.ToString();
+                                    var STokenName = token["optimized_symbol"]?.ToString();
+                                    
+                                    double TokenBalance = 0;
+                                    double TokenAmount = 0;
+                                    double TokenPrice = 0;
+
+                                    if (STokenAmount is not null && STokenPrice is not null)
+                                    {
+                                        TokenAmount = double.Parse(STokenAmount.ToString());
+                                        TokenPrice = double.Parse(STokenPrice.ToString());
+                                        TokenBalance = TokenAmount * TokenPrice;
+                                    }
+
+                                    Token.Value = TokenBalance;
+                                    Token.Chain = STokenChain is null ? Chains.Unknown : Structures.DeBank.RequestChains[STokenChain];
+                                    Token.Name = STokenName is null ? "Unknown" : STokenName;
+                                    Token.Amount = TokenAmount;
+
+                                    return Token;
+                                }).Where(token => token.Chain is not Chains.Unknown && token.Name != "Unknown" && token.Value != 0).ToList();
+                            break;
+                        }
+
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (Tokens is null && ForceRetry is true)
+                    {
+                        return GetUserChainTokens(Address, ChainId, true);
+                    }
+                }
+
+                return Tokens;
+            }
+        }
+    }
+
+    public class Ronin
+    {
+        public bool BrowserSupported = false;
+        public bool WebSupported = true;
+
+        public class WMethod
+        {
+            public static double? GetNetworth(string Address, bool ForceRetry = true, int Retries = 0)
+            {
+                double? Networth = null;
+
+                var Proxies = GrabProxiesFromSettings();
+                if (Proxies is not null)
+                {
+                    foreach (var Proxy in Proxies)
+                    {
+                        var Request = new HttpRequest();
+                        Request.Proxy = GetProxyClient(Proxy);
+                        Request.AcceptEncoding = "none";
+                        Request.Proxy.ConnectTimeout = DCTimeout;
+                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+
+                        try
+                        {
+                            var Response = Request.Get($"https://explorerv3-api.roninchain.com/address/{Address}");
+                            var ResponseObject = JObject.Parse(Response.ToString());
+                            var ResponseUSDValue = ResponseObject["networth"];
+                            if (ResponseUSDValue is not null) Networth = double.Parse(ResponseUSDValue.ToString());
+                            break;
+                        }
+
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                if (Networth is null && ForceRetry is true)
+                {
+                    return GetNetworth(Address);
+                }
+
                 return Networth;
             }
         }
     }
 
-    public static Total? WFetchWallet(object Item, bool ConsoleOutput = true)
+    public static Total? WFetchWallet(object Item)
     {
         var Total = new Total();
         Account? NAccount = null;
@@ -573,18 +736,19 @@ public class Fetchers
 
         try
         {
-            var WNetworth = DeBank.WMethod.GetNetworth(NAccount.Address);
+            var WDBNetworth = DeBank.WMethod.GetNetworth(NAccount.Address);
+            var WRNetworth = Ronin.WMethod.GetNetworth(NAccount.Address);
+            var WTNetworth = WDBNetworth + WRNetworth;
 
             Total = new Total()
             {
                 Address = NAccount.Address,
-                Value = WNetworth is null ? 0 : Math.Round(WNetworth.Value, 2),
+                Value = WTNetworth is null ? 0 : Math.Round(WTNetworth.Value, 2),
                 PrivateKey = Total.PrivateKey is null ? null : Total.PrivateKey,
                 Mnemonic = Total.Mnemonic is null ? null : Total.Mnemonic,
-                Status = WNetworth is not null
+                Status = WTNetworth is not null
             };
 
-            Console.WriteLine($" [{DateTime.Now:HH:mm:ss}] {Total.Address.Pastel(ConsoleColor.Yellow)} => {(Total.Value > 0 ? $"{Total.Value}$".Pastel(System.Drawing.Color.GreenYellow) : $"{Total.Value}$".Pastel(System.Drawing.Color.OrangeRed))}");
             return Total;
         }
 
@@ -641,9 +805,7 @@ public class Fetchers
 
         try
         {
-            Console.WriteLine($" [{DateTime.Now:HH:mm:ss}] {NAccount.Address.Pastel(System.Drawing.Color.Yellow)} {"trying to connect...".Pastel(System.Drawing.Color.Yellow)}");
             var Profile = new DeBank.BMethod(NAccount.Address);
-            Console.WriteLine($" [{DateTime.Now:HH:mm:ss}] {NAccount.Address.Pastel(System.Drawing.Color.Yellow)} {"connected!".Pastel(System.Drawing.Color.Yellow)}");
             var WTotal = await Profile.GetAll();
             await Profile.Close();
 
@@ -708,90 +870,139 @@ public class Fetchers
 
     public static List<Total> Call(string WorkPath, string ResultsPath, List<Vault.Secret>? Secrets = null, bool FromDecryptor = false)
     {
-        if (FromDecryptor is false)
-            Utils.ClearAndShow();
-
         var Balances = new List<Total>();
-        var Settings = new Utils.IniFile("Settings.ini");
+        var Settings = new IniFile("Settings.ini");
         string? Threads = Settings.Read("Fetcher", "Threads");
         Threads ??= "1";
         var CallTime = DateTime.Now;
         var ItemList = new List<object>();
+        bool ForceStop = false;
 
-        Console.WriteLine($" {"FETCHER LAUNCHED".Pastel(System.Drawing.Color.OrangeRed)}\n");
-        Console.Title = "Fetcher";
+        AnsiConsole.MarkupLine($"{(FromDecryptor is true ? "\n" : "")} [mediumpurple]#[/] Fetcher started");
+        Console.Title = "~ Fetcher";
+        var LinesSpinner = new CustomSpinners.Lines();
 
-        if (Secrets is null && FromDecryptor is false)
-        {
-            if (!File.Exists(WorkPath))
-                return Balances;
-
-            Console.WriteLine(" ! Collecting data from work path");
-            var StringWallets = Utils.GrabStringWallets(WorkPath);
-
-            if (StringWallets is null)
+        AnsiConsole.Status()
+            .Spinner(LinesSpinner)
+            .SpinnerStyle(Style.Parse("mediumpurple"))
+            .Start(" [mediumpurple]@[/] Working...", ctx =>
             {
-                Console.WriteLine($" ! No any mnemonics or private keys found");
-                return Balances;
-            }
-            Console.WriteLine(" ! Collecting is done, processing...\n");
-
-            StringWallets.ForEach(wallet => ItemList.Add(wallet));
-        }
-
-        else if (Secrets is not null && FromDecryptor is true)
-        {
-            Secrets.ForEach(secret => 
-            {
-                if (secret.Mnemonics is not null)
-                    secret.Mnemonics.ForEach(mnemonic => ItemList.Add(mnemonic));
-                if (secret.PrivateKeys is not null)
-                    secret.PrivateKeys.ForEach(key => ItemList.Add(key));
-            });
-        }
-
-        else if (Secrets is null && FromDecryptor is true)
-        {
-            Console.WriteLine(" ! No any data to fetch");
-            return Balances;
-        }
-
-        int ProcessorCount = Environment.ProcessorCount;
-        Console.Title = $"Fetcher [{ItemList.Count} secrets]";
-        var Partitions = Partitioner.Create(ItemList).GetPartitions(int.Parse(Threads));
-        var Tasks = new List<Task>();
-        int FetchedCount = 0;
-
-        foreach (var Partition in Partitions)
-        {
-            var task = Task.Run(() =>
-            {
-                while (Partition.MoveNext())
+                if (Secrets is null && FromDecryptor is false)
                 {
-                    try
+                    if (File.Exists(WorkPath))
                     {
-                        var Item = Partition.Current;
-                        var WBalance = WFetchWallet(Item);
-                        if (WBalance is not null)
+                        ctx.Status = " [mediumpurple]@[/] Collecting items from working path...";
+                        var StringWallets = GrabStringWallets(WorkPath);
+
+                        if (StringWallets is not null)
                         {
-                            Balances.Add(WBalance.Value);
-                            Recorders.Universal.Record(ResultsPath, WBalance.Value);
+                            StringWallets.ForEach(wallet => ItemList.Add(wallet));
+                        }
+
+                        else
+                        {
+                            AnsiConsole.MarkupLine($" [black on plum2] No any items was found in working path [/]");
+                            ForceStop = true;
                         }
                     }
-                    catch (Exception e)
+
+                    else
                     {
-                        Console.WriteLine(e);
+                        AnsiConsole.MarkupLine(" [black on plum2] Working path file is not exists [/]");
+                        ForceStop = true;
+                    }
+                }
+
+                else if (Secrets is not null && FromDecryptor is true)
+                {
+                    ctx.Status = " [mediumpurple]@[/] Collecting items from secrets...";
+
+                    Secrets.ForEach(secret =>
+                    {
+                        secret.Mnemonics?.ForEach(mnemonic => { if (!ItemList.Contains(mnemonic)) ItemList.Add(mnemonic); });
+                        secret.PrivateKeys?.ForEach(key => { if (!ItemList.Contains(key)) ItemList.Add(key); });
+                    });
+                }
+
+                else if (Secrets is null && FromDecryptor is true)
+                {
+                    AnsiConsole.MarkupLine(" [black on plum2] Nothing to fetch [/]");
+                    ForceStop = true;
+                }
+
+                if (ForceStop is false)
+                {
+                    ctx.Status = " [mediumpurple]@[/] Fetching...";
+                    int ProcessorCount = Environment.ProcessorCount;
+                    Console.Title = $"~ Fetcher {{{ItemList.Count} secrets}}";
+                    var Partitions = Partitioner.Create(ItemList).GetPartitions(int.Parse(Threads));
+                    var Tasks = new List<Task>();
+                    int FetchedCount = 0;
+
+                    foreach (var Partition in Partitions)
+                    {
+                        var task = Task.Run(() =>
+                        {
+                            while (Partition.MoveNext())
+                            {
+                                try
+                                {
+                                    var Item = Partition.Current;
+                                    var WBalance = WFetchWallet(Item);
+                                    if (WBalance is not null)
+                                    {
+                                        Balances.Add(WBalance.Value);
+                                        var OutputColor = WBalance.Value.Value > 0 ? "mediumpurple" : "plum2";
+                                        Recorders.Universal.Record(ResultsPath, WBalance.Value);
+                                        AnsiConsole.MarkupLine($" [{OutputColor}]>[/] Address [{OutputColor}]{{{WBalance.Value.Address}}}[/] balance is [{OutputColor}]{{{WBalance.Value.Value}$}}[/]");
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e);
+                                }
+
+                                FetchedCount++;
+                                Console.Title = $"~ Fetcher {{{FetchedCount}/{ItemList.Count} items}}";
+                            }
+                        });
+
+                        Tasks.Add(task);
                     }
 
-                    FetchedCount++;
-                    Console.Title = $"Fetching [{FetchedCount}/{ItemList.Count} secrets]";
+                    Task.WaitAll(Tasks.ToArray());
+                    AnsiConsole.MarkupLine($" [mediumpurple]#[/] Fetching is done");
+
+                    if (Balances.Count > 0)
+                    {
+                        AnsiConsole.WriteLine();
+                        var BChart = new BarChart();
+                        BChart.Width = 60;
+                        var WalletsData = new Dictionary<string, int>();
+                        var EmptyWallets = Balances.Where(el => el.Value == 0).ToList();
+                        var BalancesWallets = Balances.Where(el => el.Value > 0).ToList();
+
+                        if (EmptyWallets.Count > 0) WalletsData.Add("Empty", EmptyWallets.Count);
+                        if (BalancesWallets.Count > 0) WalletsData.Add("With balance", BalancesWallets.Count);
+
+                        var OrderedWalletsData = WalletsData.OrderByDescending(el => el.Value);
+                        var SDColors = new Dictionary<int, Color>()
+                        {
+                            { 1, Color.Plum1 },
+                            { 2, Color.Plum2 }
+                        };
+
+                        var CurrentDataIndex = 1;
+                        foreach (var OWD in OrderedWalletsData)
+                        {
+                            BChart.AddItem($" {OWD.Key}", OWD.Value, SDColors[CurrentDataIndex]);
+                            CurrentDataIndex++;
+                        }
+
+                        AnsiConsole.Write(BChart);
+                    }
                 }
             });
-
-            Tasks.Add(task);
-        }
-
-        Task.WaitAll(Tasks.ToArray());
 
         return Balances;
     }

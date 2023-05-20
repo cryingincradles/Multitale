@@ -88,7 +88,7 @@ public class Recorders
             {
                 try
                 {
-                    string OutputText = $"Address: {Balance.Address}\nSecret: {(Balance.Mnemonic is null ? Balance.PrivateKey is null ? "MISSING" : Balance.PrivateKey.Value.Value : Balance.Mnemonic.Value.Value)}\nParsed: {Balance.Status}\nBalance: {Balance.Value}\n\n";
+                    string OutputText = $"Address: {Balance.Address}\nSecret: {(Balance.Mnemonic is null ? Balance.PrivateKey is null ? "MISSING" : Balance.PrivateKey.Value.Value : Balance.Mnemonic.Value.Value)}\nParsed: {Balance.Status}\nBalance: {Balance.Value}$\n\n";
                     File.AppendAllText($"{WBalancesPath}/All.txt", OutputText);
                     
                     if (WriteTypes is true)

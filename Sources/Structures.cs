@@ -1,56 +1,111 @@
 ﻿public class Structures
 {
-    public static Dictionary<string, Chains> DeBankChains = new()
+    public struct DeBank
     {
-        { "ethereum", Chains.Ethereum },
-        { "bnb chain", Chains.BinanceSC },
-        { "polygon", Chains.Polygon },
-        { "avanalnche", Chains.Avalanche },
-        { "arbitrum", Chains.Arbitrum },
-        { "arbitrum nova", Chains.ArbitrumNova },
-        { "gnosis chain", Chains.Gnosis },
-        { "fantom", Chains.Fantom },
-        { "boba", Chains.Boba },
-        { "okc", Chains.OKC },
-        { "heco", Chains.Heco },
-        { "optimism", Chains.Optimism },
-        { "celo", Chains.Celo },
-        { "moonriver", Chains.Moonriver },
-        { "cronos", Chains.Cronos },
-        { "metis", Chains.Metis },
-        { "bttc", Chains.BTTC },
-        { "aurora", Chains.Aurora },
-        { "moonbeam", Chains.Moonbeam },
-        { "smartbch", Chains.SmartBCH },
-        { "harmony", Chains.Harmony },
-        { "fuse", Chains.Fuse },
-        { "astar", Chains.Astar },
-        { "palm", Chains.Palm },
-        { "shiden", Chains.Shiden },
-        { "klaytn", Chains.Klaytn },
-        { "rsk", Chains.RSK },
-        { "iotex", Chains.Iotex },
-        { "kcc", Chains.KCC },
-        { "wanchain", Chains.Wanchain },
-        { "songbird", Chains.Songbird },
-        { "evmos", Chains.Evmos },
-        { "dfk", Chains.DFK },
-        { "telos", Chains.Telos },
-        { "swimmer", Chains.Swimmer },
-        { "canto", Chains.Canto },
-        { "dogechain", Chains.Dogechain },
-        { "step", Chains.Step },
-        { "kava", Chains.Kava },
-        { "milkomeda", Chains.Milkomeda },
-        { "conflux", Chains.Conflux },
-        { "bitgert", Chains.Bitgert },
-        { "godwoken", Chains.Godwoken },
-        { "tomb chain", Chains.Tomb },
-        { "polygon zkevm", Chains.PolygonZK },
-        { "zksync era", Chains.zkSync },
-        { "eos evm", Chains.EOS },
-        { "core", Chains.Core }
-    };
+        public static Dictionary<string, Chains> BrowserChains = new()
+        {
+            { "ethereum", Chains.Ethereum },
+            { "bnb chain", Chains.BinanceSC },
+            { "polygon", Chains.Polygon },
+            { "avanalnche", Chains.Avalanche },
+            { "arbitrum", Chains.Arbitrum },
+            { "arbitrum nova", Chains.ArbitrumNova },
+            { "gnosis chain", Chains.Gnosis },
+            { "fantom", Chains.Fantom },
+            { "boba", Chains.Boba },
+            { "okc", Chains.OKC },
+            { "heco", Chains.Heco },
+            { "optimism", Chains.Optimism },
+            { "celo", Chains.Celo },
+            { "moonriver", Chains.Moonriver },
+            { "cronos", Chains.Cronos },
+            { "metis", Chains.Metis },
+            { "bttc", Chains.BTTC },
+            { "aurora", Chains.Aurora },
+            { "moonbeam", Chains.Moonbeam },
+            { "smartbch", Chains.SmartBCH },
+            { "harmony", Chains.Harmony },
+            { "fuse", Chains.Fuse },
+            { "astar", Chains.Astar },
+            { "palm", Chains.Palm },
+            { "shiden", Chains.Shiden },
+            { "klaytn", Chains.Klaytn },
+            { "rsk", Chains.RSK },
+            { "iotex", Chains.Iotex },
+            { "kcc", Chains.KCC },
+            { "wanchain", Chains.Wanchain },
+            { "songbird", Chains.Songbird },
+            { "evmos", Chains.Evmos },
+            { "dfk", Chains.DFK },
+            { "telos", Chains.Telos },
+            { "swimmer", Chains.Swimmer },
+            { "canto", Chains.Canto },
+            { "dogechain", Chains.Dogechain },
+            { "step", Chains.Step },
+            { "kava", Chains.Kava },
+            { "milkomeda", Chains.Milkomeda },
+            { "conflux", Chains.Conflux },
+            { "bitgert", Chains.Bitgert },
+            { "godwoken", Chains.Godwoken },
+            { "tomb chain", Chains.Tomb },
+            { "polygon zkevm", Chains.PolygonZK },
+            { "zksync era", Chains.zkSync },
+            { "eos evm", Chains.EOS },
+            { "core", Chains.Core }
+        };
+
+        public static Dictionary<string, Chains> RequestChains = new()
+        {
+            { "eth", Chains.Ethereum },
+            { "bsc", Chains.BinanceSC },
+            { "matic", Chains.Polygon },
+            { "avax", Chains.Avalanche },
+            { "arb", Chains.Arbitrum },
+            { "nova", Chains.ArbitrumNova },
+            { "xdai", Chains.Gnosis },
+            { "ftm", Chains.Fantom },
+            { "boba", Chains.Boba },
+            { "okt", Chains.OKC },
+            { "heco", Chains.Heco },
+            { "op", Chains.Optimism },
+            { "celo", Chains.Celo },
+            { "movr", Chains.Moonriver },
+            { "cro", Chains.Cronos },
+            { "metis", Chains.Metis },
+            { "btt", Chains.BTTC },
+            { "aurora", Chains.Aurora },
+            { "mobm", Chains.Moonbeam },
+            { "sbch", Chains.SmartBCH },
+            { "hmy", Chains.Harmony },
+            { "fuse", Chains.Fuse },
+            { "astar", Chains.Astar },
+            { "palm", Chains.Palm },
+            { "sdn", Chains.Shiden },
+            { "klay", Chains.Klaytn },
+            { "rsk", Chains.RSK },
+            { "iotx", Chains.Iotex },
+            { "kcc", Chains.KCC },
+            { "wan", Chains.Wanchain },
+            { "sgb", Chains.Songbird },
+            { "evmos", Chains.Evmos },
+            { "dfk", Chains.DFK },
+            { "tlos", Chains.Telos },
+            { "swm", Chains.Swimmer },
+            { "canto", Chains.Canto },
+            { "doge", Chains.Dogechain },
+            { "step", Chains.Step },
+            { "kava", Chains.Kava },
+            { "mada", Chains.Milkomeda },
+            { "cfx", Chains.Conflux },
+            { "brise", Chains.Bitgert },
+            { "ckb", Chains.Godwoken },
+            { "tomb", Chains.Tomb },
+            { "pze", Chains.PolygonZK },
+            { "era", Chains.zkSync },
+            { "eos", Chains.EOS },
+            { "core", Chains.Core }
+        };
+    }
 
     public struct Balances
     {
@@ -118,6 +173,7 @@
 
     public enum Chains
     {
+        Unknown,
         Ethereum,
         BinanceSC,
         BinanceC,
@@ -169,7 +225,8 @@
         PolygonZK,
         Bitcoin,
         Litecoin,
-        Dogecoin
+        Dogecoin,
+        Ronin
     }
 
     public enum Types
@@ -201,6 +258,17 @@
         Decryptor,
         ProxyScrapper,
         ProxyValidator
+    }
+
+    public enum RoninItems
+    {
+        RON,
+        AXS,
+        SLP,
+        WETH,
+        AXIE,
+        LAND,
+        ITEM
     }
 
     public struct StringWallet
@@ -256,7 +324,6 @@
             public string Data { get; set; }
             public string IV { get; set; }
             public string Salt { get; set; }
-
         }
 
         public struct Encrypted
@@ -271,7 +338,10 @@
         public struct Secret
         {
             public Types Type { get; set; }
-            public string Password { get; set; }
+            public string Path { get; set; }
+            public List<string>? Addresses { get; set; }
+            public bool Decrypted { get; set; }
+            public string? Password { get; set; }
             public List<Mnemonic> Mnemonics { get; set; }
             public List<PrivateKey> PrivateKeys { get; set; }
         }
