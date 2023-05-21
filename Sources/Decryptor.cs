@@ -150,15 +150,6 @@ public class Decryptor
                         Secret.Password = null;
                         Secret.Decrypted = false;
                     }
-
-                    if (Password == CachedPassword)
-                    {
-                        CachedPassword = null;
-                        Password = pwd;
-                        DecryptedString = DecryptVault(Password, EncryptedVault.Salt, EncryptedVault.IV, EncryptedVault.Data);
-
-                        if (DecryptedString is null) continue;
-                    }
                 }
 
                 else
@@ -292,7 +283,7 @@ public class Decryptor
                                             StatusColumn.Width = 25;
                                             table.AddColumn(StatusColumn);
 
-                                            if ((Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0) && !Secrets.Contains(Secret.Value))
+                                            if (Secret.Value.Mnemonics.Count != 0 || Secret.Value.PrivateKeys.Count != 0 || !Secrets.Contains(Secret.Value))
                                             {
                                                 Secrets.Add(Secret.Value);
                                                 string RecordFullPath = $"{RecordPath}/Decryptor";
