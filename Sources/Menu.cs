@@ -52,7 +52,7 @@ public class Menu
             var AboutColumnHeader = new Panel("[plum2]About[/]").Expand();
             var AboutColumnData = new Markup($"I decided to make a project that could interest both me and people who know what it is for. I wanted to try to make something that could be redesigned for myself and supplemented by any developer who would like to try himself in this field.\n[plum2]If you want the project to continue to be supported, updated, and supplemented, you can leave your donation using the available methods in the \"Donate\" block.[/]");
             var AboutColumn = new TableColumn(new Rows(AboutColumnHeader, AboutColumnData));
-            AboutColumn.Width = 70;
+            AboutColumn.Width = 55;
 
             var DonateHeader = new Panel("[plum2]Donate[/]").Expand();
             var DonateData = new Markup("[plum2]┌─ Ethereum (and other ERC-20)\n└─[/] 0x375c1A4CcC41FcB2d35122aDDA008A8ecD384333\n[plum2]┌─ Bitcoin\n└─[/] bc1ql3thytsud4x9nulym3xkpmppv5eh8cj84tqsnp\n[plum2]┌─ Litecoin\n└─[/] LaX2ZRgDwAWqsYhHLvZDc3xYz1sA2LEFuM");
@@ -67,7 +67,7 @@ public class Menu
             var LinksColumnHeader = new Panel("[mediumpurple]Links[/]").Expand();
             var LinksColumnData = new Markup("[mediumpurple]Github:[/] https://github.com/cryingincradles/Multitale\n[mediumpurple]Telegram:[/] https://t.me/multitale\n[mediumpurple]Lolzteam:[/] https://zelenka.guru/threads/5167800");
             var LinksColumn = new TableColumn(new Rows(LinksColumnHeader, LinksColumnData));
-            LinksColumn.Width = 70;
+            LinksColumn.Width = 55;
 
             var DeveloperColumnHeader = new Panel("[mediumpurple]Developer[/]").Expand();
             var DeveloperColumnData = new Markup("[mediumpurple]Username:[/] cradles\n[mediumpurple]Telegram:[/] https://t.me/cryingincradles\n[mediumpurple]Lolzteam:[/] https://zelenka.guru/cradles");
