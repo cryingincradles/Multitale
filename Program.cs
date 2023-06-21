@@ -33,7 +33,7 @@ class Program
         try
         {
             Console.CursorVisible = false;
-            Utils.IniFile Settings = new Utils.IniFile("Settings.ini");
+            Utils.IniFile Settings = new("Settings.ini");
             if (Settings.IsEmpty()) Utils.LoadDefaults();
 
             Menu.Main.Show();
