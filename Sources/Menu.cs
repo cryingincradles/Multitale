@@ -706,7 +706,7 @@ public class Menu
             if (!Directory.Exists(ResultsPath))
                 Utils.TryCreateDirectory(ResultsPath);
 
-            string RecordPath = $"{ResultsPath}/{StartTime:yyyy.MM.dd} ({StartTime:H-mm-ss})";
+            string RecordPath = $"{ResultsPath}/{StartTime:yyyy.MM.dd} ({StartTime:H-mm-ss}) {FunctionName}";
 
             List<Structures.Vault.Secret>? Secrets = null;
             List<Structures.Balances.Total>? Balances = null;

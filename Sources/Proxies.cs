@@ -12,10 +12,10 @@ public partial class Utils
     {
         private static bool FromScrapper = false;
 
-        public static Proxy Validate(Proxy Proxy, int MS = 500, string? ResourceUrl = null)
+        public static object? Validate(Proxy Proxy, int MS = 5000, string? ResourceUrl = null)
         {
             Proxy.Type ??= GetProxyType(Proxy.Port);
-            ResourceUrl ??= "https://api.debank.com/chain/list";
+            string RequestUrl = ResourceUrl is null ? "https://example.com" : ResourceUrl;
 
             try
             {
@@ -28,30 +28,52 @@ public partial class Utils
 
                 var MSWatcher = new Stopwatch();
                 MSWatcher.Start();
-
-                HttpResponse Response = Request.Get(ResourceUrl);
+                var Response = Request.Get(RequestUrl);
 
                 if (Response.IsOK)
                 {
                     if (Request.Proxy is HttpProxyClient && Response.ContainsHeader("Upgrade") && Response["Upgrade"].ToLower() == "tls/1.2") Proxy.Type = Structures.ProxyType.HTTPS;
                     else if (Request.Proxy is HttpProxyClient) Proxy.Type = Structures.ProxyType.HTTP;
-                    if ((int)MSWatcher.ElapsedMilliseconds > 1000) return Proxy;
+                    if ((int)MSWatcher.ElapsedMilliseconds > MS) return Proxy;
 
                     MSWatcher.Stop();
                     Proxy.Speed = (int)MSWatcher.ElapsedMilliseconds;
-                    return Proxy;
+                    var CachedResponse = Response.ToString();
+
+                    if (ResourceUrl is null) return Proxy;
+                    else return Response;
                 }
 
                 else
                 {
-                    Console.WriteLine(Response.StatusCode);
-                    return Proxy;
+                    throw new Exception("Response is not OK");
                 }
             }
 
             catch (Exception)
             {
-                return Proxy;
+                if (Proxy.Login is not null && Proxy.Password is not null && Proxy.Type is not Structures.ProxyType.SOCKS5)
+                {
+                    Proxy.Type = Structures.ProxyType.SOCKS5;
+                }
+
+                else if (Proxy.Type is Structures.ProxyType.HTTP)
+                {
+                    Proxy.Type = Structures.ProxyType.SOCKS4;
+                }
+
+                else if (Proxy.Type is Structures.ProxyType.SOCKS4)
+                {
+                    Proxy.Type = Structures.ProxyType.SOCKS5;
+                }
+
+                else if (Proxy.Type is Structures.ProxyType.SOCKS5)
+                {
+                    if (ResourceUrl is not null) return null;
+                    else return Proxy;
+                }
+
+                return Validate(Proxy, ResourceUrl: ResourceUrl);
             }
         }
 
@@ -378,7 +400,7 @@ public partial class Utils
                 PType = Structures.ProxyType.HTTPS;
 
             else
-                PType = Structures.ProxyType.SOCKS4;
+                PType = Structures.ProxyType.HTTP;
 
             return PType;
         }
@@ -425,20 +447,23 @@ public partial class Utils
                             {
                                 try
                                 {
-                                    var VProxy = Validate(Partition.Current);
+                                    var VProxy = (Proxy?)Validate(Partition.Current);
 
-                                    if (VProxy.Speed is null && WriteTypes is true)
+                                    if (VProxy is not null)
                                     {
-                                        TryCreateDirectory(ResultsPath);
-                                        Recorders.Universal.Record(ResultsPath, VProxy);
-                                    }
+                                        if (VProxy.Value.Speed is null && WriteTypes is true)
+                                        {
+                                            TryCreateDirectory(ResultsPath);
+                                            Recorders.Universal.Record(ResultsPath, VProxy);
+                                        }
 
-                                    if (VProxy.Speed is not null)
-                                    {
-                                        TryCreateDirectory(ResultsPath);
-                                        AnsiConsole.MarkupLine($" [mediumpurple]>[/] Proxy [mediumpurple]{{{VProxy.IP}:{VProxy.Port}}}[/] was connected in [mediumpurple]{{{VProxy.Speed}ms}}[/]");
-                                        Recorders.Universal.Record(ResultsPath, VProxy);
-                                        ValidProxies.Add(VProxy);
+                                        if (VProxy.Value.Speed is not null)
+                                        {
+                                            TryCreateDirectory(ResultsPath);
+                                            AnsiConsole.MarkupLine($" [mediumpurple]>[/] Proxy [mediumpurple]{{{VProxy.Value.IP}:{VProxy.Value.Port}}}[/] was connected in [mediumpurple]{{{VProxy.Value.Speed}ms}}[/]");
+                                            Recorders.Universal.Record(ResultsPath, VProxy);
+                                            ValidProxies.Add(VProxy.Value);
+                                        }
                                     }
 
                                     ValidatedCounter++;

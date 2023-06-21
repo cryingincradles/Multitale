@@ -234,6 +234,7 @@
         Metamask,
         Binance,
         Ronin,
+        Exouds,
         Unknown
     }
 

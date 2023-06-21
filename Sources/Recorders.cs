@@ -137,6 +137,8 @@ public class Recorders
                         {
                             if (IsValid is false)
                                 File.AppendAllText($"{WProxiesPath}/Invalid.txt", OutputText);
+                            else
+                                File.AppendAllText($"{WProxiesPath}/{Proxy.Type}.txt", OutputText);
                         }
 
                         if (IsValid is true)

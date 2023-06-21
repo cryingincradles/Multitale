@@ -369,10 +369,6 @@ public partial class Utils
         Console.CursorVisible = false;
         AnsiConsole.Clear();
         Program.ShowLogo();
-
-        //Console.Write("\u001b[2J\u001b[3J");
-        //Console.Clear();
-        //
     }
 
     public static void LoadDefaults()
@@ -415,7 +411,7 @@ public partial class Utils
         }
     }
 
-    public static List<string>? GetLines(string path)
+    public static List<string>? GetPasswords(string path)
     {
         var PasswordsData = File.ReadAllText(path);
         var PasswordsLines = new List<string>();
@@ -453,16 +449,17 @@ public partial class Utils
         path ??= root_path;
 
         var Files = Directory.GetFiles(path, "*.txt", SearchOption.AllDirectories)
-            .Where(el => el.Contains("assword"))
+            .Where(el => el.ToLower().Contains("pass"))
             .ToList();
+
         if (Files.Count < 1) return FindPasswords(root_path, Path.GetDirectoryName(path));
 
         foreach (var File in Files)
         {
-            var Lines = GetLines(File);
+            var Lines = GetPasswords(File);
             if (Lines is null) continue;
 
-            Lines.ForEach(el => Passwords.Add(el));
+            Lines.ForEach(Passwords.Add);
         }
 
         return Passwords;

@@ -37,7 +37,7 @@ public class Parsers
                     if (ObjectType.Contains("HD"))
                     {
                         var ObjectMnemonic = Object["data"]["mnemonic"];
-                        Structures.Mnemonic Mnemonic = new() { Type = "Default" };
+                        Mnemonic Mnemonic = new() { Type = "Default" };
 
                         if (ObjectMnemonic.GetType() == typeof(JArray) && ObjectMnemonic.Count() > 1)
                             Mnemonic.Value = Encoding.Default.GetString(ObjectMnemonic.ToObject<byte[]>());

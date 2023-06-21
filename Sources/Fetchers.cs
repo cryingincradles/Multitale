@@ -11,8 +11,8 @@ using static Utils;
 
 public class Fetchers
 {
-    private static int DCTimeout = 450;
-    private static int DRWTimeout = 450;
+    private static readonly int DCTimeout = 1450;
+    private static readonly int DRWTimeout = 1450;
 
     public class DeBank
     {
@@ -498,40 +498,41 @@ public class Fetchers
 
         public class WMethod
         {
-            public static double? GetNetworth(string Address, bool ForceRetry = true)
+            public static double? GetNetworth(string Address, bool ForceRetry = false, Proxy? Proxy = null)
             {
                 double? Networth = null;
 
-                var Proxies = Utils.GrabProxiesFromSettings();
-                if (Proxies is not null)
+                var Request = new HttpRequest();
+
+                if (Proxy is not null) Request.Proxy = GetProxyClient(Proxy.Value);
+                Request.AcceptEncoding = "none";
+                Request.Proxy.ConnectTimeout = DCTimeout;
+                Request.Proxy.ReadWriteTimeout = DRWTimeout;
+
+                try
                 {
-                    foreach (var Proxy in Proxies)
-                    {
-                        var Request = new HttpRequest();
-                        Request.Proxy = Utils.GetProxyClient(Proxy);
-                        Request.AcceptEncoding = "none";
-                        Request.Proxy.ConnectTimeout = DCTimeout;
-                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+                    HttpResponse? Response;
 
-                        try
-                        {
-                            var Response = Request.Get($"https://api.debank.com/user/addr?addr={Address}");
-                            var ResponseObject = JObject.Parse(Response.ToString());
-                            var ResponseUSDValue = ResponseObject["data"]?["desc"]?["usd_value"];
-                            if (ResponseUSDValue is not null) Networth = double.Parse(ResponseUSDValue.ToString());
-                            break;
-                        }
+                    if (Proxy is not null)
+                        Response = (HttpResponse?)ProxyScrapper.Validate(Proxy.Value, ResourceUrl: $"https://api.debank.com/user/addr?addr={Address}");
+                    else 
+                        Response = Request.Get($"https://api.debank.com/user/addr?addr={Address}");
 
-                        catch
-                        {
-                            continue;
-                        }
-                    }
+                    if (Response is null) throw new Exception("Null response");
+
+                    var ResponseObject = JObject.Parse(Response.ToString());
+                    var ResponseUSDValue = ResponseObject["data"]?["desc"]?["usd_value"];
+                    if (ResponseUSDValue is not null) Networth = double.Parse(ResponseUSDValue.ToString());
+                }
+
+                catch
+                {
+
                 }
 
                 if (Networth is null && ForceRetry is true) 
                 {
-                    return GetNetworth(Address);
+                    return GetNetworth(Address, Proxy: Proxy);
                 }
 
                 return Networth;
@@ -690,7 +691,7 @@ public class Fetchers
         }
     }
 
-    public static Total? WFetchWallet(object Item)
+    public static Total? WFetchWallet(object Item, Proxy? Proxy = null)
     {
         var Total = new Total();
         Account? NAccount = null;
@@ -736,9 +737,9 @@ public class Fetchers
 
         try
         {
-            var WDBNetworth = DeBank.WMethod.GetNetworth(NAccount.Address);
-            var WRNetworth = Ronin.WMethod.GetNetworth(NAccount.Address);
-            var WTNetworth = WDBNetworth + WRNetworth;
+            var WDBNetworth = DeBank.WMethod.GetNetworth(NAccount.Address, Proxy: Proxy);
+            //var WRNetworth = Ronin.WMethod.GetNetworth(NAccount.Address);
+            var WTNetworth = WDBNetworth; //+ WRNetworth;
 
             Total = new Total()
             {
@@ -748,6 +749,8 @@ public class Fetchers
                 Mnemonic = Total.Mnemonic is null ? null : Total.Mnemonic,
                 Status = WTNetworth is not null
             };
+
+            if (WTNetworth is null) return null;
 
             return Total;
         }
@@ -765,7 +768,6 @@ public class Fetchers
 
         if (Item is StringWallet StringWallet)
         {
-
             if (StringWallet.Type is StringWalletTypes.Mnemonic)
             {
                 var NWallet = new Wallet(StringWallet.Value, "");
@@ -832,11 +834,8 @@ public class Fetchers
         var Balances = new List<Total>();
         var Combined = new List<object>();
 
-        if (Secret.Mnemonics is not null)
-            Secret.Mnemonics.ForEach(mnemonic => Combined.Add(mnemonic));
-
-        if (Secret.PrivateKeys is not null)
-            Secret.PrivateKeys.ForEach(key => Combined.Add(key));
+        Secret.Mnemonics?.ForEach(mnemonic => Combined.Add(mnemonic));
+        Secret.PrivateKeys?.ForEach(key => Combined.Add(key));
 
         if (Combined.Count == 0) return Balances;
 
@@ -934,10 +933,14 @@ public class Fetchers
                 {
                     ctx.Status = " [mediumpurple]@[/] Fetching...";
                     int ProcessorCount = Environment.ProcessorCount;
-                    Console.Title = $"~ Fetcher {{{ItemList.Count} secrets}}";
+                    Console.Title = $"~ Fetcher {{{ItemList.Count} items}}";
                     var Partitions = Partitioner.Create(ItemList).GetPartitions(int.Parse(Threads));
+                    var Proxies = Utils.GrabProxiesFromSettings();
                     var Tasks = new List<Task>();
+                    var Semaphore = new SemaphoreSlim(int.Parse(Threads));
+
                     int FetchedCount = 0;
+                    int LastProxyIndex = 0;
 
                     foreach (var Partition in Partitions)
                     {
@@ -945,10 +948,28 @@ public class Fetchers
                         {
                             while (Partition.MoveNext())
                             {
+                                Semaphore.Wait();
                                 try
                                 {
+                                    if (Proxies is not null && LastProxyIndex >= Proxies.Count) LastProxyIndex = 0;
+
                                     var Item = Partition.Current;
-                                    var WBalance = WFetchWallet(Item);
+                                    Total? WBalance = null;
+
+                                    while (true)
+                                    {
+                                        WBalance = WFetchWallet(Item, Proxies?[LastProxyIndex]);
+                                        if (WBalance is null)
+                                        {
+                                            LastProxyIndex++;
+                                            continue;
+                                        }
+
+                                        else break;
+                                    }
+
+                                    LastProxyIndex++;
+
                                     if (WBalance is not null)
                                     {
                                         Balances.Add(WBalance.Value);
@@ -964,6 +985,8 @@ public class Fetchers
 
                                 FetchedCount++;
                                 Console.Title = $"~ Fetcher {{{FetchedCount}/{ItemList.Count} items}}";
+
+                                Semaphore.Release();
                             }
                         });
 

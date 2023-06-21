@@ -120,7 +120,7 @@ public class Decryptor
 
     public static Structures.Vault.Secret? Decrypt(string path, List<string> passwords)
     {
-        var Settings = new Utils.IniFile("Settings.ini");
+        var Settings = new IniFile("Settings.ini");
         string? RootPath = Settings.Read("Main", "LastPath");
         var EncryptedVaults = GrabVaults(path);
         if (EncryptedVaults is null) return null;
