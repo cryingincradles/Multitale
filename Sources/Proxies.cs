@@ -15,7 +15,7 @@ public partial class Utils
         public static object? Validate(Proxy Proxy, int MS = 5000, string? ResourceUrl = null)
         {
             Proxy.Type ??= GetProxyType(Proxy.Port);
-            string RequestUrl = ResourceUrl is null ? "https://example.com" : ResourceUrl;
+            string RequestUrl = ResourceUrl is null ? "https://dns.google/" : ResourceUrl;
 
             try
             {
@@ -29,7 +29,7 @@ public partial class Utils
                 var MSWatcher = new Stopwatch();
                 MSWatcher.Start();
                 var Response = Request.Get(RequestUrl);
-
+                
                 if (Response.IsOK)
                 {
                     if (Request.Proxy is HttpProxyClient && Response.ContainsHeader("Upgrade") && Response["Upgrade"].ToLower() == "tls/1.2") Proxy.Type = Structures.ProxyType.HTTPS;
