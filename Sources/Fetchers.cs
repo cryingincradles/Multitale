@@ -11,8 +11,8 @@ using static Utils;
 
 public class Fetchers
 {
-    private static readonly int DCTimeout = 1450;
-    private static readonly int DRWTimeout = 1450;
+    private static readonly int DcTimeout = 1450;
+    private static readonly int DrwTimeout = 1450;
 
     public class DeBank
     {
@@ -25,14 +25,14 @@ public class Fetchers
             private IPage? page;
             public string Address;
             public bool IsConnected = false;
-            public bool CBStatus = false;
-            public bool LBStatus = false;
-            public bool ODPStatus = false;
+            public bool CbStatus = false;
+            public bool LbStatus = false;
+            public bool OdpStatus = false;
 
-            public BMethod(string address, bool autoconnect = true)
+            public BMethod(string address, bool autoConnect = true)
             {
                 Address = address;
-                if (autoconnect is true)
+                if (autoConnect)
                     Connect().GetAwaiter().GetResult();
             }
 
@@ -41,9 +41,9 @@ public class Fetchers
                 try
                 {
                     using var browserFetcher = new BrowserFetcher();
-                    var RevisionData = await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
-                    if (RevisionData.Downloaded is false) throw new Exception("Browser wasn't downloaded successfully (network error or timeout)");
-                    CBStatus = true;
+                    var revisionData = await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+                    if (revisionData.Downloaded is false) throw new Exception("Browser wasn't downloaded successfully (network error or timeout)");
+                    CbStatus = true;
                     return true;
                 }
 
@@ -96,7 +96,7 @@ public class Fetchers
                     });
 
                     if (browser is null) throw new Exception("Browser wasn't started successfully");
-                    LBStatus = true;
+                    LbStatus = true;
                     return true;
                 }
 
@@ -115,7 +115,7 @@ public class Fetchers
                     await page.GoToAsync($"https://debank.com/profile/{address}");
                     var UpdateElement = await page.WaitForXPathAsync("/html/body/div[1]/div/div[2]/div[1]/div[2]/div/div[2]/div[2]/span/span");
                     if (UpdateElement is null) throw new Exception("DeBank Profile update element XPath is incorrect or timeouted");
-                    ODPStatus = true;
+                    OdpStatus = true;
                     return true;
                 }
 
@@ -506,22 +506,22 @@ public class Fetchers
 
                 if (Proxy is not null) Request.Proxy = GetProxyClient(Proxy.Value);
                 Request.AcceptEncoding = "none";
-                Request.Proxy.ConnectTimeout = DCTimeout;
-                Request.Proxy.ReadWriteTimeout = DRWTimeout;
+                Request.Proxy.ConnectTimeout = DcTimeout;
+                Request.Proxy.ReadWriteTimeout = DrwTimeout;
 
                 try
                 {
                     HttpResponse? Response;
 
                     if (Proxy is not null)
-                        Response = (HttpResponse?)ProxyScrapper.Validate(Proxy.Value, ResourceUrl: $"https://api.debank.com/user/addr?addr={Address}");
+                        Response = (HttpResponse?)ProxyScrapper.Validate(Proxy.Value, ResourceUrl: $"https://api.debank.com/user?id={Address}");
                     else 
-                        Response = Request.Get($"https://api.debank.com/user/addr?addr={Address}");
+                        Response = Request.Get($"https://api.debank.com/user?id={Address}");
 
                     if (Response is null) throw new Exception("Null response");
-
+                    
                     var ResponseObject = JObject.Parse(Response.ToString());
-                    var ResponseUSDValue = ResponseObject["data"]?["desc"]?["usd_value"];
+                    var ResponseUSDValue = ResponseObject["data"]?["user"]?["desc"]?["usd_value"];
                     if (ResponseUSDValue is not null) Networth = double.Parse(ResponseUSDValue.ToString());
                 }
 
@@ -550,8 +550,8 @@ public class Fetchers
                         var Request = new HttpRequest();
                         Request.Proxy = Utils.GetProxyClient(Proxy);
                         Request.AcceptEncoding = "none";
-                        Request.Proxy.ConnectTimeout = DCTimeout;
-                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+                        Request.Proxy.ConnectTimeout = DcTimeout;
+                        Request.Proxy.ReadWriteTimeout = DrwTimeout;
 
                         try
                         {
@@ -589,8 +589,8 @@ public class Fetchers
                         var Request = new HttpRequest();
                         Request.Proxy = Utils.GetProxyClient(Proxy);
                         Request.AcceptEncoding = "none";
-                        Request.Proxy.ConnectTimeout = DCTimeout;
-                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+                        Request.Proxy.ConnectTimeout = DcTimeout;
+                        Request.Proxy.ReadWriteTimeout = DrwTimeout;
 
                         try
                         {
@@ -662,8 +662,8 @@ public class Fetchers
                         var Request = new HttpRequest();
                         Request.Proxy = GetProxyClient(Proxy);
                         Request.AcceptEncoding = "none";
-                        Request.Proxy.ConnectTimeout = DCTimeout;
-                        Request.Proxy.ReadWriteTimeout = DRWTimeout;
+                        Request.Proxy.ConnectTimeout = DcTimeout;
+                        Request.Proxy.ReadWriteTimeout = DrwTimeout;
 
                         try
                         {
@@ -928,7 +928,9 @@ public class Fetchers
                     AnsiConsole.MarkupLine(" [black on plum2] Nothing to fetch [/]");
                     ForceStop = true;
                 }
-
+    
+                
+                
                 if (ForceStop is false)
                 {
                     ctx.Status = " [mediumpurple]@[/] Fetching...";
@@ -938,7 +940,8 @@ public class Fetchers
                     var Proxies = Utils.GrabProxiesFromSettings();
                     var Tasks = new List<Task>();
                     var Semaphore = new SemaphoreSlim(int.Parse(Threads));
-
+                    
+                    
                     int FetchedCount = 0;
                     int LastProxyIndex = 0;
 
@@ -948,11 +951,11 @@ public class Fetchers
                         {
                             while (Partition.MoveNext())
                             {
+                                //AnsiConsole.WriteLine($"Proxie index: {LastProxyIndex}");
                                 Semaphore.Wait();
                                 try
                                 {
                                     if (Proxies is not null && LastProxyIndex >= Proxies.Count) LastProxyIndex = 0;
-
                                     var Item = Partition.Current;
                                     Total? WBalance = null;
 
@@ -962,6 +965,7 @@ public class Fetchers
                                         if (WBalance is null)
                                         {
                                             LastProxyIndex++;
+                                            if (Proxies is not null && LastProxyIndex >= Proxies.Count) LastProxyIndex = 0;
                                             continue;
                                         }
 
