@@ -469,7 +469,7 @@ public partial class Utils
     {
         List<Proxy> Proxies = new();
         var FileData = File.ReadAllText(path);
-        var ProxiesRegex = new System.Text.RegularExpressions.Regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})(\\:(\\w*):(\\w*))?", RegexOptions.Multiline);
+        var ProxiesRegex = new System.Text.RegularExpressions.Regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(\\d{1,5})(:(.*):(.*))?", RegexOptions.Multiline);
         var ProxiesMatches = ProxiesRegex.Matches(FileData);
 
         if (ProxiesMatches.Count > 0)
