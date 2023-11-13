@@ -3,6 +3,7 @@
 Cryptocurrency wallet tool program written in C# .NET 7.0
 
 ## Disclaimer
+I AM NOT A DEVELOPER OF THIS PROJECT. I JUST FORKED ORIGINAL MULTITALE AND FIXED MAIN ISSUES
 
 I, the creator, am not responsible for any actions, and or damages, caused by this software. You bear the full responsibility of your actions and acknowledge that this software was created for educational purposes only. This software's main purpose is NOT to be used maliciously, or on any system that you do not own, or have the right to use. By using this software, you automatically agree to the above
 
