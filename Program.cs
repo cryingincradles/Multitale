@@ -1,10 +1,9 @@
-﻿using Spectre.Console;
-using System.Runtime.InteropServices;
+﻿namespace Multitale;
 
 class Program
 {
     public static void Main()
     {
-
+        
     }
 }

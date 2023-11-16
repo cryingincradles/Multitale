@@ -1,8 +1,10 @@
 ﻿using System.Text;
 
+namespace Multitale.Sources;
+
 public class IniFile
 {
-    private string filePath;
+    private string _filePath;
     private object _fileLock = new();
 
     public struct IniData
@@ -21,7 +23,7 @@ public class IniFile
 
     public IniFile(string filePath)
     {
-        this.filePath = filePath;
+        this._filePath = filePath;
         if (!File.Exists(filePath)) File.Create(filePath).Close();
     }
 
@@ -32,7 +34,7 @@ public class IniFile
 
         lock (_fileLock)
         {
-            var lines = File.ReadAllLines(filePath, Encoding.UTF8);
+            var lines = File.ReadAllLines(_filePath, Encoding.UTF8);
 
             var sectionFound = false;
             var keyFound = false;
@@ -57,7 +59,7 @@ public class IniFile
             {
                 if (!sectionFound)
                 {
-                    File.AppendAllText(filePath, $"\r\n{sectionHeader}\r\n{line}", Encoding.UTF8);
+                    File.AppendAllText(_filePath, $"\r\n{sectionHeader}\r\n{line}", Encoding.UTF8);
                 }
                 else
                 {
@@ -65,12 +67,12 @@ public class IniFile
                     Array.Resize(ref lines, lines.Length + 1);
                     Array.Copy(lines, insertIndex, lines, insertIndex + 1, lines.Length - insertIndex - 1);
                     lines[insertIndex] = line;
-                    File.WriteAllLines(filePath, lines, Encoding.UTF8);
+                    File.WriteAllLines(_filePath, lines, Encoding.UTF8);
                 }
             }
             else
             {
-                File.WriteAllLines(filePath, lines, Encoding.UTF8);
+                File.WriteAllLines(_filePath, lines, Encoding.UTF8);
             }
         }
     }
@@ -78,7 +80,7 @@ public class IniFile
     public string? Read(string section, string key)
     {
         string? defaultValue = null;
-        var lines = File.ReadAllLines(filePath, Encoding.UTF8);
+        var lines = File.ReadAllLines(_filePath, Encoding.UTF8);
 
         var sectionFound = false;
         foreach (var line in lines)
@@ -99,7 +101,7 @@ public class IniFile
 
     public List<IniData>? ReadSection(string section)
     {
-        var lines = File.ReadAllLines(filePath);
+        var lines = File.ReadAllLines(_filePath);
         var result = new List<IniData>();
 
         foreach (var line in lines)
@@ -129,7 +131,7 @@ public class IniFile
 
     public List<IniData>? ReadAll()
     {
-        var lines = File.ReadAllLines(filePath);
+        var lines = File.ReadAllLines(_filePath);
         var result = new List<IniData>();
         var section = string.Empty;
 
@@ -138,9 +140,8 @@ public class IniFile
             var trimmedLine = line.Trim();
 
             if (trimmedLine.StartsWith("[") && trimmedLine.EndsWith("]"))
-            {
                 section = trimmedLine[1..^1];
-            }
+            
             else if (!string.IsNullOrWhiteSpace(trimmedLine) && !trimmedLine.StartsWith(";") && section != string.Empty)
             {
                 var index = trimmedLine.IndexOf('=');
@@ -175,10 +176,10 @@ public class IniFile
             lines.Add($"{item.Key}={item.Value}");
         }
 
-        File.WriteAllLines(filePath, lines);
+        File.WriteAllLines(_filePath, lines);
     }
 
-    public bool IsEmpty() => !File.ReadLines(filePath)
+    public bool IsEmpty() => !File.ReadLines(_filePath)
         .Any(line => !string.IsNullOrWhiteSpace(line) && !line.TrimStart().StartsWith(";"));
 }
 
@@ -188,17 +189,18 @@ public class Settings
     
     public IFetcher Fetcher;
     public IMain Main;
-    public IDecryptor Decryptor;
+    public IDecoder Decryptor;
     
     public List<IniFile.IniData> Defaults = new()
     {
         new("Main", "Language", "Russian"),
-        new("Main", "ConsoleView", "Default"),
+        new("Main", "ViewMode", "Default"),
         new("Main", "SaveDetails", "True"),
-        new("Main", "ProxiesPath", ""),
-        new("Decryptor", "DirectoryPath", ""),
-        new("Decryptor", "Threads", "40"),
-        new("Decryptor", "Fetch", "True"),
+        new("Main", "ProxyPath", ""),
+        new("Main", "ProxyTimeout", "2000"),
+        new("Decoder", "DirectoryPath", ""),
+        new("Decoder", "Threads", "40"),
+        new("Decoder", "Fetch", "True"),
         new("Fetcher", "FilePath", ""),
         new("Fetcher", "Threads", "40")
     };
@@ -208,7 +210,7 @@ public class Settings
         if (_settingsIni.IsEmpty()) _settingsIni.RewriteAll(Defaults);
         Fetcher = new IFetcher();
         Main = new IMain();
-        Decryptor = new IDecryptor();
+        Decryptor = new IDecoder();
     }
 
     public class IMain
@@ -219,10 +221,10 @@ public class Settings
             set => _settingsIni.Write("Main", "Language", value ?? "");
         }
         
-        public string? ConsoleView
+        public string? ViewMode
         {
-            get => _settingsIni.Read("Main", "ConsoleView");
-            set => _settingsIni.Write("Main", "ConsoleView", value ?? "");
+            get => _settingsIni.Read("Main", "ViewMode");
+            set => _settingsIni.Write("Main", "ViewMode", value ?? "");
         }
         
         public bool? SaveDetails
@@ -231,31 +233,37 @@ public class Settings
             set => _settingsIni.Write("Main", "SaveDetails", value is null ? "True" : $"{value}");
         }
         
-        public string? ProxiesPath
+        public string? ProxyPath
         {
-            get => _settingsIni.Read("Main", "ProxiesPath");
-            set => _settingsIni.Write("Main", "ProxiesPath", value ?? "");
+            get => _settingsIni.Read("Main", "ProxyPath");
+            set => _settingsIni.Write("Main", "ProxyPath", value ?? "");
+        }
+        
+        public int? ProxyTimeout
+        {
+            get => int.TryParse(_settingsIni.Read("Main", "ProxyTimeout"), out var result) ? result : null;
+            set => _settingsIni.Write("Main", "ProxyTimeout", value is null ? "2000" : $"{value}");
         }
     }
 
-    public class IDecryptor
+    public class IDecoder
     {
         public string? DirectoryPath
         {
-            get => _settingsIni.Read("Decryptor", "DirectoryPath");
-            set => _settingsIni.Write("Decryptor", "DirectoryPath", value ?? "");
+            get => _settingsIni.Read("Decoder", "DirectoryPath");
+            set => _settingsIni.Write("Decoder", "DirectoryPath", value ?? "");
         }
         
         public int? Threads
         {
-            get => int.TryParse(_settingsIni.Read("Decryptor", "Threads"), out var result) ? result : null;
-            set => _settingsIni.Write("Decryptor", "Threads", value is null ? "True" : $"{value}");
+            get => int.TryParse(_settingsIni.Read("Decoder", "Threads"), out var result) ? result : null;
+            set => _settingsIni.Write("Decoder", "Threads", value is null ? "True" : $"{value}");
         }
         
         public bool? Fetch
         {
-            get => bool.TryParse(_settingsIni.Read("Decryptor", "Fetch"), out var result) ? result : null;
-            set => _settingsIni.Write("Decryptor", "Fetch", value is null ? "True" : $"{value}");
+            get => bool.TryParse(_settingsIni.Read("Decoder", "Fetch"), out var result) ? result : null;
+            set => _settingsIni.Write("Decoder", "Fetch", value is null ? "True" : $"{value}");
         }
     }
     
