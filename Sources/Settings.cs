@@ -184,6 +184,12 @@ public class IniFile
 
 public class Settings
 {
+    private static IniFile _settingsIni = new("Settings.ini");
+    
+    public IFetcher Fetcher;
+    public IMain Main;
+    public IDecryptor Decryptor;
+    
     public List<IniFile.IniData> Defaults = new()
     {
         new("Main", "Language", "Russian"),
@@ -191,16 +197,80 @@ public class Settings
         new("Main", "SaveDetails", "True"),
         new("Main", "ProxiesPath", ""),
         new("Decryptor", "DirectoryPath", ""),
-        new("Decryptor", "Fetch", "True"),
         new("Decryptor", "Threads", "40"),
+        new("Decryptor", "Fetch", "True"),
         new("Fetcher", "FilePath", ""),
         new("Fetcher", "Threads", "40")
     };
-    
-    private static IniFile _settingsIni = new("Settings.ini");
 
     public Settings()
     {
         if (_settingsIni.IsEmpty()) _settingsIni.RewriteAll(Defaults);
+        Fetcher = new IFetcher();
+        Main = new IMain();
+        Decryptor = new IDecryptor();
+    }
+
+    public class IMain
+    {
+        public string? Language
+        {
+            get => _settingsIni.Read("Main", "Language");
+            set => _settingsIni.Write("Main", "Language", value ?? "");
+        }
+        
+        public string? ConsoleView
+        {
+            get => _settingsIni.Read("Main", "ConsoleView");
+            set => _settingsIni.Write("Main", "ConsoleView", value ?? "");
+        }
+        
+        public bool? SaveDetails
+        {
+            get => bool.TryParse(_settingsIni.Read("Main", "SaveDetails"), out var result) ? result : null;
+            set => _settingsIni.Write("Main", "SaveDetails", value is null ? "True" : $"{value}");
+        }
+        
+        public string? ProxiesPath
+        {
+            get => _settingsIni.Read("Main", "ProxiesPath");
+            set => _settingsIni.Write("Main", "ProxiesPath", value ?? "");
+        }
+    }
+
+    public class IDecryptor
+    {
+        public string? DirectoryPath
+        {
+            get => _settingsIni.Read("Decryptor", "DirectoryPath");
+            set => _settingsIni.Write("Decryptor", "DirectoryPath", value ?? "");
+        }
+        
+        public int? Threads
+        {
+            get => int.TryParse(_settingsIni.Read("Decryptor", "Threads"), out var result) ? result : null;
+            set => _settingsIni.Write("Decryptor", "Threads", value is null ? "True" : $"{value}");
+        }
+        
+        public bool? Fetch
+        {
+            get => bool.TryParse(_settingsIni.Read("Decryptor", "Fetch"), out var result) ? result : null;
+            set => _settingsIni.Write("Decryptor", "Fetch", value is null ? "True" : $"{value}");
+        }
+    }
+    
+    public class IFetcher
+    {   
+        public string? FilePath
+        {
+            get => _settingsIni.Read("Fetcher", "FilePath");
+            set => _settingsIni.Write("Fetcher", "FilePath", value ?? "");
+        }
+        
+        public int? Threads
+        {
+            get => int.TryParse(_settingsIni.Read("Fetcher", "Threads"), out var result) ? result : null;
+            set => _settingsIni.Write("Fetcher", "Threads", value is null ? "True" : $"{value}");
+        }
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-public class Utils
+public static class Utils
 {
     
 }
