@@ -207,7 +207,11 @@ public class Settings
 
     public Settings()
     {
-        if (_settingsIni.IsEmpty()) _settingsIni.RewriteAll(Defaults);
+        if (_settingsIni.IsEmpty())
+        {
+            _settingsIni.RewriteAll(Defaults);
+            Program.Log.Warning("Settings was empty, default values loaded");
+        };
         Fetcher = new IFetcher();
         Main = new IMain();
         Decryptor = new IDecoder();
