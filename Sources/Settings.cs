@@ -222,7 +222,7 @@ public class Settings
         public string? Language
         {
             get => _settingsIni.Read("Main", "Language");
-            set => _settingsIni.Write("Main", "Language", value ?? "");
+            set => _settingsIni.Write("Main", "Language", value ?? "English");
         }
         
         public string? ViewMode

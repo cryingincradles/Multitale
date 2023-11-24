@@ -11,7 +11,7 @@ public class Localisation
         var manager = new Manager();
         manager.Load();
     }
-    
+
     public class MainMenu
     {
         public string Tint { get; set; }
@@ -38,6 +38,8 @@ public class Localisation
         public string Tint { get; set; }
         public string Donate { get; set; }
         public string DonateText { get; set; }
+        public string Requisites { get; set; }
+        public string RequisitesText { get; set; }
     }
 
     public class SettingsMenu
@@ -67,70 +69,30 @@ public class Localisation
         public DonateMenu DonateMenu { get; set; }
     }
 
-    public static Base English = new()
-    {
-        MainMenu = new()
-        {
-            Tint = "Use arrows to select and enter or space to confirm",
-            About = "About",
-            Launcher = "Launcher",
-            Settings = "Settings",
-            Donate = "Donate"
-        },
-        AboutMenu = new()
-        {
-            Tint = "Use Escape or Backspace to go back",
-            About = "About",
-            Developers = "Developers",
-            AboutText = "I decided to make a project that could interest both me and people who know what it is for." +
-                        "I wanted to try to make something that could be redesigned for myself and supplemented by any developer who would like to try himself in this field.",
-            DevelopersText = "cradles saykowa",
-            Links = "Links",
-            LinksText = "Github: https://github.com/cryingincradles/Multitale Telegram: https://t.me/multitale Lolzteam: https://zelenka.guru/threads/5167800",
-            GoBack = "Go back"
-        },
-        DonateMenu = new()
-        {
-            Tint = "Use Escape or Backspace to go back",
-            Donate = "Donate",
-            DonateText = "Multitale is my biggest development practice, to which I devote a huge amount of my time." +
-                         "So, if you want the project to continue to be supported, updated, and supplemented, you can leave your donation using the available methods below"
-        },
-        LauncherMenu = new()
-        {
-            Tint = "Use arrows to select (or Escape/Backspace to go back)",
-            Decoder = "Decoder",
-            Fetcher = "Fetcher",
-            ProxyScrapper = "Proxy Scrapper",
-            ProxyChecker = "Proxy Checker"
-        },
-        SettingsMenu = new()
-        {
-            Tint = "Use arrows to select (or Escape/Backspace to go back)",
-            ViewMode = "View mode",
-            Language = "English",
-            ProxyPath = "Proxy path",
-            SaveDetails = "Save details"
-        }
-    };
+    private static readonly Dictionary<string, Base> LocaleCache = new();
+
+    public static Base English { get; private set; }
 
     public class Manager
     {
         private readonly string _localePath = "./Localisation";
         private readonly object _fileLocker = new();
 
-        public Base GetLocale(string localeFile)
+        public Base GetLocale(string localeName)
         {
-            localeFile = localeFile + ".json";
+            localeName += ".json";
             string? localeString;
-        
+            
+            if (LocaleCache.TryGetValue(localeName, out var cachedLocale))
+                return cachedLocale;
+            
             try
             {
-                localeString = File.ReadAllText(Path.Combine(_localePath, localeFile));
+                localeString = File.ReadAllText(Path.Combine(_localePath, localeName));
             }
             catch (Exception ex)
             {
-                Program.Log.Error($"Error occured while trying to read {localeFile} file\n{ex}");
+                Program.Log.Error($"Error occured while trying to read {localeName} file\n{ex}");
                 Program.Log.Warning("Default localisation will be used");
                 CreateDefaultLocale();
                 return English;
@@ -138,34 +100,92 @@ public class Localisation
 
             var locale = JsonConvert.DeserializeObject<Base>(localeString);
             if (locale is null)
-                Program.Log.Warning($"Loaded localisation file ({localeFile}) structure is different from Base structure. Default \"English\" localisation will be used");
-            
+                Program.Log.Warning($"Loaded localisation file ({localeName}) structure is different from Base structure. Default \"English\" localisation will be used");
+
             return locale ?? English;
         }
 
         public void Load() => CreateDefaultLocale();
-        
-        public void CreateDefaultLocale()
+
+        private void CreateDefaultLocale()
         {
             lock (_fileLocker)
             {
                 Program.Log.Information("Checking default localisation");
-                
-                if (!Directory.Exists(_localePath)) 
+
+                if (!Directory.Exists(_localePath))
                     Directory.CreateDirectory(_localePath);
 
                 var localeFilePath = Path.Combine(_localePath, "English.json");
-            
-                if (File.Exists(localeFilePath)) 
+                LocaleCache.Add("English", new Base
+                    {
+                        MainMenu = new()
+                        {
+                            Tint = "Use arrows to select and enter or space to confirm",
+                            About = "About",
+                            Launcher = "Launcher",
+                            Settings = "Settings",
+                            Donate = "Donate"
+                        },
+                        AboutMenu = new()
+                        {
+                            Tint = "Use arrows to select and enter or space to confirm",
+                            About = "About",
+                            Developers = "Developers",
+                            AboutText =
+                                "I decided to make a project that could interest both me and people who know what it is for. " +
+                                "I wanted to try to make something that could be redesigned for myself and supplemented by any developer who would like to try himself in this field.",
+                            DevelopersText = "cradles, saykowa",
+                            Links = "Links",
+                            LinksText = "https://github.com/cryingincradles/Multitale" + "\n" +
+                                        "https://t.me/multitale" + "\n" +
+                                        "https://zelenka.guru/threads/5167800",
+                            GoBack = "Go back"
+                        },
+                        DonateMenu = new()
+                        {
+                            Tint = "Use Escape or Backspace to go back",
+                            Donate = "Donate",
+                            DonateText =
+                                "Multitale is my biggest development practice, to which I spend a huge amount of my time. " +
+                                "So, if you want the project to continue to be supported, updated, and supplemented, you can leave your donation using the available requisites below",
+                            Requisites = "Requisites",
+                            RequisitesText = "ETH/BSC -> 0x375c1A4CcC41FcB2d35122aDDA008A8ecD384333" + "\n" +
+                                             "BTC -> bc1ql3thytsud4x9nulym3xkpmppv5eh8cj84tqsnp" + "\n" +
+                                             "LTC -> LaX2ZRgDwAWqsYhHLvZDc3xYz1sA2LEFuM" + "\n" +
+                                             "USDT -> TH2n3dQ8Jd2mzvoGatkpBPz5CHRhNTmnan" + "\n" +
+                                             "SOL -> EJWQbh4T43uV8mxkcbyLXCthG6CafqeyQBrvLMpHfSm2"
+                        },
+                        LauncherMenu = new()
+                        {
+                            Tint = "Use arrows to select (or Escape/Backspace to go back)",
+                            Decoder = "Decoder",
+                            Fetcher = "Fetcher",
+                            ProxyScrapper = "Proxy Scrapper",
+                            ProxyChecker = "Proxy Checker"
+                        },
+                        SettingsMenu = new()
+                        {
+                            Tint = "Use arrows to select (or Escape/Backspace to go back)",
+                            ViewMode = "View mode",
+                            Language = "English",
+                            ProxyPath = "Proxy path",
+                            SaveDetails = "Save details"
+                        }
+                    }
+                );
+                English = LocaleCache["English"];
+                
+                if (File.Exists(localeFilePath))
                     return;
 
                 Program.Log.Information("Creating default localisation");
-                
+
                 var defaultLocale = English;
                 var defaultLocaleString = JsonConvert.SerializeObject(defaultLocale, Formatting.Indented);
 
                 File.WriteAllText(localeFilePath, defaultLocaleString);
-                
+
                 Program.Log.Information("Localisation creation process done");
             }
         }

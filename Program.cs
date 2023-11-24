@@ -1,4 +1,6 @@
-﻿using Multitale.Sources;
+﻿#pragma warning disable CS8618
+
+using Multitale.Sources;
 using Serilog;
 using Spectre.Console;
 
@@ -7,6 +9,18 @@ namespace Multitale;
 class Program
 {
     public static ILogger Log { get; private set; }
+    public static Settings Settings { get; set; }
+    
+    public const string Logo = @" |\/|     | _|_ o _|_  _. |  _ " + "\n" + 
+                               @" |  | |_| |  |_ |  |_ (_| | (/_";
+    
+    private static void BuildConsole()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Cursor.Hide();
+        Console.CursorVisible = false;
+        AnsiConsole.MarkupLine($"\n[mediumpurple]{Logo}[/]");
+    }
     
     private static void BuildLogger()
     {
@@ -19,11 +33,6 @@ class Program
     private static void BuildLocalisation() => Localisation.Build();
 
     private static void BuildSettings() => Settings = new Settings();
-
-    public static string Logo = @" |\/|     | _|_ o _|_  _. |  _ " + "\n" +
-                                 " |  | |_| |  |_ |  |_ (_| | (/_";
-
-    public static Settings Settings { get; set; }
 
     public static Localisation.Base Locale
     {
@@ -39,13 +48,13 @@ class Program
     public static void Main()
     {
         BuildLogger();
-        BuildLocalisation();
         BuildSettings();
+        BuildLocalisation();
+        BuildConsole();
         
         Log.Information($"Multitale loaded!");
         
-        AnsiConsole.Cursor.Hide();
-        AnsiConsole.MarkupLine($"\n[mediumpurple]{Logo}[/]");
         Sources.Menus.Main.Show();
+        Console.ReadKey(false);
     }
 }

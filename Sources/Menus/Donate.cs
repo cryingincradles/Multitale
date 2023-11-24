@@ -2,23 +2,22 @@
 
 namespace Multitale.Sources.Menus;
 
-public class About
+public class Donate
 {
     public static void Show()
     {
-        AnsiConsole.MarkupLine($"\n [gray]{Program.Locale.AboutMenu.Tint}[/]\n");
+        AnsiConsole.MarkupLine($"\n [gray]{Program.Locale.DonateMenu.Tint}[/]\n");
 
-        var aboutPanel = new Panel(
-            $"[mediumpurple]{Program.Locale.AboutMenu.About.ToUpper()}[/]\n{Program.Locale.AboutMenu.AboutText}" + "\n\n" +
-            $"[mediumpurple]{Program.Locale.AboutMenu.Developers.ToUpper()}[/]\n{Program.Locale.AboutMenu.DevelopersText}" + "\n\n" +
-            $"[mediumpurple]{Program.Locale.AboutMenu.Links.ToUpper()}[/]\n{Program.Locale.AboutMenu.LinksText}"
-            )
+        var donatePanel = new Panel(
+            $"[mediumpurple]{Program.Locale.DonateMenu.Donate.ToUpper()}[/]\n[indianred1]{Program.Locale.DonateMenu.DonateText}[/]" + "\n\n" +
+            $"[mediumpurple]{Program.Locale.DonateMenu.Requisites.ToUpper()}[/]\n{Program.Locale.DonateMenu.RequisitesText}"
+        )
         {
             Padding = new Padding(1,0,1,0),
             Border = BoxBorder.None
         };
 
-        AnsiConsole.Write(aboutPanel);
+        AnsiConsole.Write(donatePanel);
         AnsiConsole.MarkupLine($"\n[plum1]> {Program.Locale.AboutMenu.GoBack}[/]");
 
         while (true)

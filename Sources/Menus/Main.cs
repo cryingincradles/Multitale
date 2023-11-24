@@ -16,5 +16,7 @@ public class Main
         var prompt = AnsiConsole.Prompt(selectionPrompt);
         if (prompt == Program.Locale.MainMenu.About)
             About.Show();
+        else if (prompt == Program.Locale.DonateMenu.Donate)
+            Donate.Show();
     }
 }
