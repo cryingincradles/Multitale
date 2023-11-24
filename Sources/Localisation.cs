@@ -117,6 +117,10 @@ public class Localisation
                     Directory.CreateDirectory(_localePath);
 
                 var localeFilePath = Path.Combine(_localePath, "English.json");
+                
+                if (File.Exists(localeFilePath))
+                    return;
+                
                 LocaleCache.Add("English", new Base
                     {
                         MainMenu = new()
@@ -175,9 +179,6 @@ public class Localisation
                     }
                 );
                 English = LocaleCache["English"];
-                
-                if (File.Exists(localeFilePath))
-                    return;
 
                 Program.Log.Information("Creating default localisation");
 

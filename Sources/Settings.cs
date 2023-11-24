@@ -209,8 +209,9 @@ public class Settings
     {
         if (_settingsIni.IsEmpty())
         {
+            Program.Log.Warning("Settings file is empty. Loading defaults...");
             _settingsIni.RewriteAll(Defaults);
-            Program.Log.Warning("Settings was empty, default values loaded");
+            Program.Log.Warning("Settings defaults loaded");
         };
         Fetcher = new IFetcher();
         Main = new IMain();
