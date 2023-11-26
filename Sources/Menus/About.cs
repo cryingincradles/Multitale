@@ -6,12 +6,14 @@ public class About
 {
     public static void Show()
     {
-        AnsiConsole.MarkupLine($"\n [gray]{Program.Locale.AboutMenu.Tint}[/]\n");
+        AnsiConsole.MarkupLine($"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.AboutMenu.About} [/] [{Program.Theme.TintColor}]{Program.Locale.AboutMenu.Tint}[/]\n");
 
         var aboutPanel = new Panel(
-            $"[mediumpurple]{Program.Locale.AboutMenu.About.ToUpper()}[/]\n{Program.Locale.AboutMenu.AboutText}" + "\n\n" +
-            $"[mediumpurple]{Program.Locale.AboutMenu.Developers.ToUpper()}[/]\n{Program.Locale.AboutMenu.DevelopersText}" + "\n\n" +
-            $"[mediumpurple]{Program.Locale.AboutMenu.Links.ToUpper()}[/]\n{Program.Locale.AboutMenu.LinksText}"
+            $"[{Program.Theme.DefaultColor}]{Program.Locale.AboutMenu.AboutText}[/]" + "\n\n" +
+            $"[{Program.Theme.BaseColor}]{Program.Locale.AboutMenu.Developers}[/]" + "\n" +
+            $"[{Program.Theme.DefaultColor}]{Program.Locale.AboutMenu.DevelopersText}[/]" + "\n\n" +
+            $"[{Program.Theme.BaseColor}]{Program.Locale.AboutMenu.Links}[/]" + "\n" +
+            $"[{Program.Theme.DefaultColor}]{Program.Locale.AboutMenu.LinksText}[/]"
             )
         {
             Padding = new Padding(1,0,1,0),
@@ -19,7 +21,7 @@ public class About
         };
 
         AnsiConsole.Write(aboutPanel);
-        AnsiConsole.MarkupLine($"\n[plum1]> {Program.Locale.AboutMenu.GoBack}[/]");
+        AnsiConsole.MarkupLine($"\n[{Program.Theme.AccentColor}]> {Program.Locale.AboutMenu.GoBack}[/]");
 
         while (true)
         {
@@ -32,7 +34,7 @@ public class About
                 continue;
             
             AnsiConsole.Write("\x1b[4;1H\x1b[0J");
-            Main.Show();
+            Home.Show();
             break;
         }
     }

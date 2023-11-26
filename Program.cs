@@ -1,6 +1,8 @@
 ﻿#pragma warning disable CS8618
 
 using Multitale.Sources;
+using Multitale.Sources.Localisation;
+using Multitale.Sources.Themes;
 using Serilog;
 using Spectre.Console;
 
@@ -16,8 +18,12 @@ class Program
     
     private static void BuildConsole()
     {
+        Log.Information("Setting up console");
+        
         AnsiConsole.Clear();
         AnsiConsole.Cursor.Hide();
+
+        Console.Title = "Multitale";
         Console.CursorVisible = false;
         AnsiConsole.MarkupLine($"\n[mediumpurple]{Logo}[/]");
     }
@@ -25,13 +31,16 @@ class Program
     private static void BuildLogger()
     {
         Log = new LoggerConfiguration()
-            .WriteTo.File($"Logs/Log [session {DateTime.Now:yyyy.MM.dd HH-mm-ss}].txt",
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] => {Message:lj}{NewLine}{Exception}")
+            .WriteTo.File($"Logs/Log_{DateTime.Now:yyyy.MM.dd_HH-mm-ss}.txt",
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss:ms} [{Level:u3}] => {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
+        Log.Information("Logger loaded");
     }
 
     private static void BuildLocalisation() => Localisation.Build();
 
+    private static void BuildThemes() => Themes.Build();
+    
     private static void BuildSettings() => Settings = new Settings();
 
     public static Localisation.Base Locale
@@ -39,9 +48,24 @@ class Program
         get
         {
             var localeManager = new Localisation.Manager();
-            return Settings.Main.Language is null ? 
-                Localisation.English : 
-                localeManager.GetLocale(Settings.Main.Language);
+            if (Settings.Main.Language is null)
+                return localeManager.GetLocale(Localisation.DefaultLocaleName);
+            
+            var language = localeManager.GetLocale(Settings.Main.Language);
+            return language;
+        }
+    }
+    
+    public static Themes.Base Theme
+    {
+        get
+        {
+            var themeManager = new Themes.Manager();
+            if (Settings.Main.Theme is null)
+                return themeManager.GetTheme(Themes.DefaultTheme.GetType().Name);
+            
+            var language = themeManager.GetTheme(Settings.Main.Theme);
+            return language;
         }
     }
     
@@ -50,11 +74,12 @@ class Program
         BuildLogger();
         BuildSettings();
         BuildLocalisation();
+        BuildThemes();
         BuildConsole();
         
-        Log.Information($"Multitale loaded!");
-        
-        Sources.Menus.Main.Show();
+        Log.Information("Multitale loaded!");
+
+        Sources.Menus.Home.Show();
         Console.ReadKey(false);
     }
 }

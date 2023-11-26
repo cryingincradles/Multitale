@@ -6,11 +6,12 @@ public class Donate
 {
     public static void Show()
     {
-        AnsiConsole.MarkupLine($"\n [gray]{Program.Locale.DonateMenu.Tint}[/]\n");
+        AnsiConsole.MarkupLine($"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.DonateMenu.Donate} [/] [{Program.Theme.TintColor}]{Program.Locale.DonateMenu.Tint}[/]\n");
 
         var donatePanel = new Panel(
-            $"[mediumpurple]{Program.Locale.DonateMenu.Donate.ToUpper()}[/]\n[indianred1]{Program.Locale.DonateMenu.DonateText}[/]" + "\n\n" +
-            $"[mediumpurple]{Program.Locale.DonateMenu.Requisites.ToUpper()}[/]\n{Program.Locale.DonateMenu.RequisitesText}"
+            $"[{Program.Theme.WarningColor}]{Program.Locale.DonateMenu.DonateText}[/]" + "\n\n" +
+            $"[{Program.Theme.BaseColor}]{Program.Locale.DonateMenu.Requisites}[/]" + "\n" +
+            $"[{Program.Theme.DefaultColor}]{Program.Locale.DonateMenu.RequisitesText}[/]"
         )
         {
             Padding = new Padding(1,0,1,0),
@@ -18,7 +19,7 @@ public class Donate
         };
 
         AnsiConsole.Write(donatePanel);
-        AnsiConsole.MarkupLine($"\n[plum1]> {Program.Locale.AboutMenu.GoBack}[/]");
+        AnsiConsole.MarkupLine($"\n[{Program.Theme.AccentColor}]> {Program.Locale.AboutMenu.GoBack}[/]");
 
         while (true)
         {
@@ -31,7 +32,7 @@ public class Donate
                 continue;
             
             AnsiConsole.Write("\x1b[4;1H\x1b[0J");
-            Main.Show();
+            Home.Show();
             break;
         }
     }
