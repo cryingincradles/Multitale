@@ -16,16 +16,25 @@ class Program
     public const string Logo = @" |\/|     | _|_ o _|_  _. |  _ " + "\n" + 
                                @" |  | |_| |  |_ |  |_ (_| | (/_";
     
-    private static void BuildConsole()
+    private static void BuildConsole(bool rebuild = false)
     {
-        Log.Information("Setting up console");
-        
-        AnsiConsole.Clear();
-        AnsiConsole.Cursor.Hide();
+        if (rebuild)
+        {
+            AnsiConsole.Write("\x1b[1;1H\x1b[0J");
+            Log.Information("Updating console");
+        }
 
-        Console.Title = "Multitale";
-        Console.CursorVisible = false;
-        AnsiConsole.MarkupLine($"\n[mediumpurple]{Logo}[/]");
+        else
+        {
+            Log.Information("Setting up console");
+            AnsiConsole.Clear();
+            AnsiConsole.Cursor.Hide();
+
+            Console.Title = "Multitale";
+            Console.CursorVisible = false;
+        }
+        
+        AnsiConsole.MarkupLine($"\n[{Theme.BaseColor}]{Logo}[/]");
     }
     
     private static void BuildLogger()
@@ -68,6 +77,8 @@ class Program
             return language;
         }
     }
+
+    public static void RebuildConsole() => BuildConsole(true);
     
     public static void Main()
     {
