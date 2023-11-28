@@ -50,6 +50,7 @@ class Program
 
     private static void BuildThemes() => Themes.Build();
     
+    // TODO Add validating for current values
     private static void BuildSettings() => Settings = new Settings();
 
     public static Localisation.Base Locale

@@ -74,6 +74,7 @@ public class Localisation
         public string NotNumber { get; set; }
         public string NotSet { get; set; }
         public string CurrentValue { get; set; }
+        public string Threads { get; set; }
     }
 
     public class LauncherMenu
@@ -84,8 +85,11 @@ public class Localisation
         public string Fetcher { get; set; }
         public string ProxyScrapper { get; set; }
         public string ProxyChecker { get; set; }
+        public string Start { get; set; }
+        public string Settings { get; set; }
+        public string GoBack { get; set; }
     }
-
+    
     public class Base
     {
         public string Alias { get; set; }
