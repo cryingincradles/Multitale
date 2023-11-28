@@ -55,6 +55,7 @@ public class Russian : Localisation.Base
         SettingsMenu = new Localisation.SettingsMenu
         {
             Tint = "Используйте стрелки для выбора, Enter или пробел для подтверждения",
+            InputTint = "Оставьте поле ввода пустым и нажмите Enter чтобы вернуться назад",
             Settings = "Настройки",
             ViewMode = "Режим отображения",
             Language = "Язык",
@@ -63,7 +64,20 @@ public class Russian : Localisation.Base
             ProxyTimeout = "Прокси таймаут",
             SaveDetails = "Сохранять детали",
             GoBack = "Вернуться назад",
+            GoBackToInput = "Вернуться к вводу",
             Change = "Изменить",
+            Enable = "Включить",
+            Disable = "Выключить",
+            Enabled = "Включено",
+            Disabled = "Выключено",
+            InputValue = "Введите новое значение",
+            InputNumber = "Введите число",
+            InputDirectoryPath = "Введите путь к папке",
+            InputFilePath = "Введите путь к файлу",
+            DirectoryNotExists = "Указанная папка не существует или не была найдена",
+            FileNotExists = "Указанный файл не существует или не был найден",
+            NotNumber = "Указанное значение не является числовым",
+            NotSet = "Не установлено",
             CurrentValue = "Текущее значение"
         };
     }

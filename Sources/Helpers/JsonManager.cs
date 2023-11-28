@@ -10,34 +10,43 @@ public class JsonManager<T>
     private readonly object _fileLocker = new();
     private readonly string _managerName;
     
-    private readonly Dictionary<string, T> _cache = new();
+    private readonly Dictionary<string, T> _cache;
 
-    protected JsonManager(string itemsPath, T defaultItem, string managerName)
+    protected JsonManager(string itemsPath, T defaultItem, string managerName, ref Dictionary<string, T> cache)
     {
         _defaultItem = defaultItem;
         _defaultItemName = defaultItem!.GetType().Name;
         _itemsPath = itemsPath;
         _managerName = managerName;
+        _cache = cache;
     }
 
-    protected static T? GetFromFile(string file)
+    protected static T? GetFromFile(string file, bool withEmptyProps = false)
     {
         var jsonString = File.ReadAllText(file);
         var item = JsonConvert.DeserializeObject<T>(jsonString);
-        return item;
+        var typeProps = typeof(T).GetProperties();
+        var itemProps = typeProps.Select(el => el.GetValue(item));
+        var hasNull = itemProps.Any(prop => prop is null);
+        return hasNull switch
+        {
+            true when withEmptyProps => item,
+            true when !withEmptyProps => default,
+            false => item,
+            _ => hasNull ? default : item
+        };
     }
 
     protected T Get(string itemName, bool swapEmptyProps = false)
     {
-        itemName += ".json";
         string? jsonString;
 
         if (_cache.TryGetValue(itemName, out var cachedItem))
             return cachedItem;
-
+        
         try
         {
-            jsonString = File.ReadAllText(Path.Combine(_itemsPath, itemName));
+            jsonString = File.ReadAllText(Path.Combine(_itemsPath, itemName + ".json"));
         }
         
         catch (Exception ex)
@@ -81,11 +90,14 @@ public class JsonManager<T>
                     item = default;
             }
         }
+
+        if (item is null) 
+            return _cache[_defaultItemName];
         
-        if (item is not null)
-            _cache.Add(itemName, item);
-        
-        return item ?? _cache[_defaultItemName];
+        Program.Log.Information($"Saving {itemName} {_managerName} to program cache...");
+        _cache.Add(itemName, item);
+
+        return item;
     }
 
     protected void Load(T? additionalItem = default)

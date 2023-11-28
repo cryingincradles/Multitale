@@ -55,6 +55,7 @@ public class English : Localisation.Base
         SettingsMenu = new Localisation.SettingsMenu
         {
             Tint = "Use arrows to select and enter or space to confirm",
+            InputTint = "Leave the input field blank and press enter to go back",
             Settings = "Settings",
             ViewMode = "View mode",
             Language = "Language",
@@ -63,7 +64,20 @@ public class English : Localisation.Base
             ProxyTimeout = "Proxy timeout",
             SaveDetails = "Save details",
             GoBack = "Go back",
+            GoBackToInput = "Go back to input",
             Change = "Change",
+            Enable = "Enable",
+            Disable = "Disable",
+            Enabled = "Enabled",
+            Disabled = "Disabled",
+            InputValue = "Enter a value",
+            InputNumber = "Enter a number",
+            InputDirectoryPath = "Enter folder path",
+            InputFilePath = "Enter file path",
+            DirectoryNotExists = "The specified folder does not exist or was not found",
+            FileNotExists = "The specified file does not exist or was not found",
+            NotNumber = "The value entered is not numeric",
+            NotSet = "Not set",
             CurrentValue = "Current value"
         };
     }

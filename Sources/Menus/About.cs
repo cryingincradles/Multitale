@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using Multitale.Sources.Helpers;
+using Spectre.Console;
 
 namespace Multitale.Sources.Menus;
 
@@ -22,20 +23,9 @@ public class About
 
         AnsiConsole.Write(aboutPanel);
         AnsiConsole.MarkupLine($"\n[{Program.Theme.AccentColor}]> {Program.Locale.AboutMenu.GoBack}[/]");
-
-        while (true)
-        {
-            Task.Delay(100);
-            Console.CursorVisible = false;
-            var keyInfo = Console.ReadKey(true);
-            var keyName = keyInfo.Key;
-
-            if (keyName is not (ConsoleKey.Enter or ConsoleKey.Spacebar)) 
-                continue;
-            
-            AnsiConsole.Write("\x1b[4;1H\x1b[0J");
-            Home.Show();
-            break;
-        }
+        
+        Utils.WhilePressed();
+        AnsiConsole.Write("\x1b[4;1H\x1b[0J");
+        Home.Show();
     }
 }

@@ -8,6 +8,7 @@ public class Themes
 {
     public static Base DefaultTheme = new Purple();
     public static string DefaultThemeName = DefaultTheme.GetType().Name;
+    private static Dictionary<string, Base> _cache = new();
     
     public static void Build()
     {
@@ -30,7 +31,7 @@ public class Themes
     {
         public const string ThemesPath = "./Themes";
         
-        public Manager() : base(ThemesPath, new Purple(), "theme") { }
+        public Manager() : base(ThemesPath, new Purple(), "theme", ref _cache) { }
 
         public static Base? GetThemeFromFile(string themeName) => GetFromFile(themeName);
 

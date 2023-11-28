@@ -8,6 +8,7 @@ public class Localisation
 {
     public static Base DefaultLocale = new English();
     public static string DefaultLocaleName = DefaultLocale.GetType().Name;
+    private static Dictionary<string, Base> _cache = new();
     
     public static void Build()
     {
@@ -49,6 +50,7 @@ public class Localisation
     public class SettingsMenu
     {
         public string Tint { get; set; }
+        public string InputTint { get; set; }
         public string Settings { get; set; }
         public string Language { get; set; }
         public string Theme { get; set; }
@@ -57,7 +59,20 @@ public class Localisation
         public string ProxyPath { get; set; }
         public string ProxyTimeout { get; set; }
         public string GoBack { get; set; }
+        public string GoBackToInput { get; set; }
         public string Change { get; set; }
+        public string Enable { get; set; }
+        public string Disable { get; set; }
+        public string Enabled { get; set; }
+        public string Disabled { get; set; }
+        public string InputValue { get; set; }
+        public string InputDirectoryPath { get; set; }
+        public string InputFilePath { get; set; }
+        public string InputNumber { get; set; }
+        public string DirectoryNotExists { get; set; }
+        public string FileNotExists { get; set; }
+        public string NotNumber { get; set; }
+        public string NotSet { get; set; }
         public string CurrentValue { get; set; }
     }
 
@@ -85,7 +100,7 @@ public class Localisation
     {
         public const string LocalesPath = "./Localisation";
         
-        public Manager() : base(LocalesPath, DefaultLocale, "locale") { }
+        public Manager() : base(LocalesPath, DefaultLocale, "locale", ref _cache) { }
 
         public static Base? GetLocaleFromFile(string localeFile) => GetFromFile(localeFile);
 

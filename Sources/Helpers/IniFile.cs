@@ -85,7 +85,7 @@ public class IniFile
             if (line.StartsWith("[") && line.EndsWith("]"))
                 sectionFound = line[1..^1] == section;
 
-            else if (sectionFound && line.Contains("="))
+            else if (sectionFound && line.Contains('='))
             {
                 var parts = line.Split('=');
                 if (parts[0] == key)
