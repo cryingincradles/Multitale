@@ -58,6 +58,7 @@ public class Localisation
         public string SaveDetails { get; set; }
         public string ProxyPath { get; set; }
         public string ProxyTimeout { get; set; }
+        public string DataFilePath { get; set; }
         public string GoBack { get; set; }
         public string GoBackToInput { get; set; }
         public string Change { get; set; }
@@ -80,6 +81,7 @@ public class Localisation
     public class LauncherMenu
     {
         public string Tint { get; set; }
+        public string StartTint { get; set; }
         public string Launcher { get; set; }
         public string Decoder { get; set; }
         public string Fetcher { get; set; }
@@ -88,6 +90,15 @@ public class Localisation
         public string Start { get; set; }
         public string Settings { get; set; }
         public string GoBack { get; set; }
+        public string ThreadsNotSet { get; set; }
+        public string DataFileNotSet { get; set; }
+        public string DataFileEmpty { get; set; }
+        public string DataFileNothingParsed { get; set; }
+        public string ParsingDataFile { get; set; }
+        public string CollectingProxy { get; set; }
+        public string FromFile { get; set; }
+        public string ValidatingProxy { get; set; }
+        public string Fetching { get; set; }
     }
     
     public class Base

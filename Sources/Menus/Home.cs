@@ -24,5 +24,7 @@ public class Home
             Donate.Show();
         else if (prompt == Program.Locale.HomeMenu.Settings)
             Settings.Show();
+        else if (prompt == Program.Locale.LauncherMenu.Fetcher)
+            Fetcher.Show();
     }
 }

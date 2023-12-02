@@ -4,6 +4,28 @@ namespace Multitale.Sources.Helpers;
 
 public static class Utils
 {
+    public static List<string> BufferedReadLines(string filePath)
+    {
+        var linesList = new List<string>();
+
+        try
+        {
+            using var fs = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var bs = new BufferedStream(fs);
+            using var sr = new StreamReader(bs);
+            while (sr.ReadLine() is { } line)
+            {
+                linesList.Add(line);
+            }
+
+            return linesList;
+        }
+        catch (Exception)
+        {
+            return linesList;
+        }
+    }
+    
     public static void WhilePressed()
     {
         while (true)
@@ -26,11 +48,22 @@ public static class Utils
     //     return element();
     // }
 
-    public static void ClearAndGo(Action element, int? clearFrom = null)
+    public static void ClearAndGo(Action element, int? clearFrom = null, bool fullCleaning = false)
     {
-        clearFrom ??= Program.Logo.Split("\n").Length + 2;
+        if (!fullCleaning)
+        {
+            clearFrom ??= Program.Logo.Split("\n").Length + 2;
         
-        AnsiConsole.Write($"\x1b[{clearFrom};1H\x1b[0J");
+            AnsiConsole.Write($"\x1b[{clearFrom};1H\x1b[0J");
+        }
+
+        else
+        {
+            Console.Clear();
+            AnsiConsole.Clear();
+            Program.ShowLogo();
+        }
+        
         element();
     }
 

@@ -89,7 +89,7 @@ public class IniFile
             {
                 var parts = line.Split('=');
                 if (parts[0] == key)
-                    return parts[1];
+                    return parts[1].Length == 0 ? defaultValue : parts[1];
             }
         }
 

@@ -27,14 +27,15 @@ class Program
         else
         {
             Log.Information("Setting up console");
+            
             AnsiConsole.Clear();
             AnsiConsole.Cursor.Hide();
-
+            
             Console.Title = "Multitale";
             Console.CursorVisible = false;
         }
         
-        AnsiConsole.MarkupLine($"\n[{Theme.BaseColor}]{Logo}[/]");
+        ShowLogo();
     }
     
     private static void BuildLogger()
@@ -53,6 +54,8 @@ class Program
     // TODO Add validating for current values
     private static void BuildSettings() => Settings = new Settings();
 
+    public static void ShowLogo() => AnsiConsole.MarkupLine($"\n[{Theme.BaseColor}]{Logo}[/]");
+    
     public static Localisation.Base Locale
     {
         get

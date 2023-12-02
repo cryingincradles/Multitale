@@ -46,11 +46,24 @@ public class Russian : Localisation.Base
         LauncherMenu = new Localisation.LauncherMenu
         {
             Tint = "Используйте стрелки для выбора, Enter или пробел для подтверждения",
+            StartTint = "Пожалуйста, будьте терпеливы и ожидайте завершения процесса",
+            Start = "Запустить",
+            Settings = "Настройки",
+            GoBack = "Вернуться назад",
             Launcher = "Лаунчер",
             Decoder = "Дешифровщик",
             Fetcher = "Фетчер",
             ProxyScrapper = "Прокси Скраппер",
-            ProxyChecker = "Прокси Чекер"
+            ProxyChecker = "Прокси Чекер",
+            ThreadsNotSet = "Количество потоков не установлено в настройках",
+            DataFileNotSet = "Проверяемый файл не установлен в настройках",
+            DataFileEmpty = "Проверяемый файл пуст",
+            DataFileNothingParsed = "Не было спаршено ни одной строки из проверяемого файла",
+            ParsingDataFile = "Собираю строки из файла",
+            CollectingProxy = "Собираю прокси",
+            FromFile = "Из файла",
+            ValidatingProxy = "Проверяю прокси",
+            Fetching = "Проверяю строки"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {
@@ -62,6 +75,7 @@ public class Russian : Localisation.Base
             Theme = "Тема",
             ProxyPath = "Путь к прокси",
             ProxyTimeout = "Прокси таймаут",
+            DataFilePath = "Проверяемый файл",
             SaveDetails = "Сохранять детали",
             GoBack = "Вернуться назад",
             GoBackToInput = "Вернуться к вводу",
@@ -78,7 +92,8 @@ public class Russian : Localisation.Base
             FileNotExists = "Указанный файл не существует или не был найден",
             NotNumber = "Указанное значение не является числовым",
             NotSet = "Не установлено",
-            CurrentValue = "Текущее значение"
+            CurrentValue = "Текущее значение",
+            Threads = "Потоки"
         };
     }
 }

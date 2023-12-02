@@ -28,36 +28,16 @@ public class Settings
         var prompt = Markup.Remove(AnsiConsole.Prompt(selectionPrompt));
 
         if (prompt == Program.Locale.SettingsMenu.GoBack)
-        {
             Home.Show();
-            return;
-        }
-
-        if (prompt == Program.Locale.SettingsMenu.Language)
-        {
+        else if (prompt == Program.Locale.SettingsMenu.Language)
             Language();
-            return;
-        }
-
-        if (prompt == Program.Locale.SettingsMenu.Theme)
-        {
+        else if (prompt == Program.Locale.SettingsMenu.Theme)
             Theme();
-            return;
-        }
-
-        if (prompt == Program.Locale.SettingsMenu.ProxyTimeout)
-        {
+        else if (prompt == Program.Locale.SettingsMenu.ProxyTimeout)
             ProxyTimeout();
-            return;
-        }
-
-        if (prompt == Program.Locale.SettingsMenu.ProxyPath)
-        {
+        else if (prompt == Program.Locale.SettingsMenu.ProxyPath)
             ProxyPath();
-            return;
-        }
-
-        Home.Show();
+        else Home.Show();
     }
 
     public static void Language()
@@ -81,7 +61,8 @@ public class Settings
 
         var selectionPrompt = new SelectionPrompt<string>()
             .Title(
-                $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.Language} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]")
+                $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.Language} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]" + "\n"
+                + $" ~ [{Program.Theme.BaseColor}]{Program.Locale.SettingsMenu.CurrentValue}:[/] {Program.Settings.Main.Language}")
             .HighlightStyle(Style.TryParse($"{Program.Theme.AccentColor} dim", out var parsedStyle)
                 ? parsedStyle ?? new Style(Color.Default)
                 : new Style(Color.Default))
@@ -119,7 +100,8 @@ public class Settings
 
         var selectionPrompt = new SelectionPrompt<string>()
             .Title(
-                $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.Theme} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]")
+                $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.Theme} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]" + "\n"
+                + $" ~ [{Program.Theme.BaseColor}]{Program.Locale.SettingsMenu.CurrentValue}:[/] {Program.Settings.Main.Theme}")
             .HighlightStyle(Style.TryParse($"{Program.Theme.AccentColor} dim", out var parsedStyle)
                 ? parsedStyle ?? new Style(Color.Default)
                 : new Style(Color.Default))
@@ -143,7 +125,8 @@ public class Settings
         {
             var selectionPrompt = new SelectionPrompt<string>()
                 .Title(
-                    $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.ProxyPath} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]")
+                    $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.ProxyPath} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]" + "\n"
+                    + $" ~ [{Program.Theme.BaseColor}]{Program.Locale.SettingsMenu.CurrentValue}:[/] {Program.Settings.Main.ProxyPath ?? Program.Locale.SettingsMenu.NotSet.ToLower()}")
                 .HighlightStyle(Style.TryParse($"{Program.Theme.AccentColor} dim", out var parsedStyle)
                     ? parsedStyle ?? new Style(Color.Default)
                     : new Style(Color.Default))
@@ -198,7 +181,8 @@ public class Settings
         {
             var selectionPrompt = new SelectionPrompt<string>()
                 .Title(
-                    $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.ProxyTimeout} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]")
+                    $"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.SettingsMenu.ProxyTimeout} [/] [{Program.Theme.TintColor}]{Program.Locale.SettingsMenu.Tint}[/]" + "\n"
+                    + $" ~ [{Program.Theme.BaseColor}]{Program.Locale.SettingsMenu.CurrentValue}:[/] {Program.Settings.Main.ProxyTimeout}")
                 .HighlightStyle(Style.TryParse($"{Program.Theme.AccentColor} dim", out var parsedStyle)
                     ? parsedStyle ?? new Style(Color.Default)
                     : new Style(Color.Default))

@@ -46,11 +46,24 @@ public class English : Localisation.Base
         LauncherMenu = new Localisation.LauncherMenu
         {
             Tint = "Use arrows to select and enter or space to confirm",
+            StartTint = "Please, be patient and wait until process will be completed",
+            Start = "Start",
+            Settings = "Settings",
+            GoBack = "Go back",
             Launcher = "Launcher",
             Decoder = "Decoder",
             Fetcher = "Fetcher",
+            ThreadsNotSet = "Threads amount is not set in the settings",
+            DataFileNotSet = "Data file is not set in the settings",
+            DataFileEmpty = "Data file is empty",
+            DataFileNothingParsed = "No one line was parsed from data file",
             ProxyScrapper = "Proxy Scrapper",
-            ProxyChecker = "Proxy Checker"
+            ProxyChecker = "Proxy Checker",
+            ParsingDataFile = "Parsing data-file lines",
+            CollectingProxy = "Collecting proxy",
+            FromFile = "From file",
+            ValidatingProxy = "Validating proxy",
+            Fetching = "Fetching lines"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {
@@ -62,6 +75,7 @@ public class English : Localisation.Base
             Theme = "Theme",
             ProxyPath = "Proxy path",
             ProxyTimeout = "Proxy timeout",
+            DataFilePath = "Data file path",
             SaveDetails = "Save details",
             GoBack = "Go back",
             GoBackToInput = "Go back to input",
@@ -78,7 +92,8 @@ public class English : Localisation.Base
             FileNotExists = "The specified file does not exist or was not found",
             NotNumber = "The value entered is not numeric",
             NotSet = "Not set",
-            CurrentValue = "Current value"
+            CurrentValue = "Current value",
+            Threads = "Threads"
         };
     }
 }
