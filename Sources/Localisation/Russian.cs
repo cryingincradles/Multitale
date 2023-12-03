@@ -57,13 +57,25 @@ public class Russian : Localisation.Base
             ProxyChecker = "Прокси Чекер",
             ThreadsNotSet = "Количество потоков не установлено в настройках",
             DataFileNotSet = "Проверяемый файл не установлен в настройках",
-            DataFileEmpty = "Проверяемый файл пуст",
+            DataFileNotExists = "Проверяемый файл не существует",
             DataFileNothingParsed = "Не было спаршено ни одной строки из проверяемого файла",
+            ProxyFileNotSet = "Файл с прокси не установлен в настройках",
+            ProxyFileNotExists = "Файл с прокси не существует или не был найден",
+            ProxyFileNothingParsed = "Не было спаршено ни одной прокси из указанного файла",
+            ProxyTimeoutNotSet = "Таймаут для прокси не установлен в настройках",
             ParsingDataFile = "Собираю строки из файла",
-            CollectingProxy = "Собираю прокси",
+            ParsingProxyFile = "Собираю прокси",
             FromFile = "Из файла",
+            CollectedWallets = "Собрано кошельков из файла",
+            CollectedProxy = "Собрано прокси из файла",
             ValidatingProxy = "Проверяю прокси",
-            Fetching = "Проверяю строки"
+            ValidatedProxy = "Валидных проксей",
+            ValidatedProxyNothingParsed = "Не было спаршено ни одной валидной прокси",
+            Fetching = "Проверяю кошельки",
+            Balance = "Баланс",
+            Wallet = "Кошелёк",
+            Mnemonic = "Фраза",
+            PrivateKey = "Ключ"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {

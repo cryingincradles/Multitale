@@ -6,7 +6,7 @@ public class Proxy
 {
     private static string? _stringType;
     
-    public ProxyObject LoadedProxy;
+    public ProxyObject Data;
 
     public class StatusObject
     {
@@ -20,8 +20,8 @@ public class Proxy
         public int Port { get; }
         public string? Login { get; set; }
         public string? Password { get; set; }
+        public string? Type => _stringType;
         public TimeSpan Timeout { get; }
-        public HttpClient? Client { get; set; }
         public StatusObject Status { get; }
 
         public ProxyObject(string ip, int port, string? login = null, string? password = null, int timeoutMs = 5000)
@@ -35,43 +35,45 @@ public class Proxy
         }
     }
 
-    public Proxy(ProxyObject loadedProxy)
+    public Proxy(ProxyObject proxy, bool validate = false)
     {
-        LoadedProxy = loadedProxy;
+        Data = proxy;
+        if (validate)
+            Validate();
     }
 
-    private WebProxy GetWebProxy(string proxyType)
+    public WebProxy GetWebProxy(string proxyType)
     {
         return new WebProxy
         {
-            Address = new Uri($"{proxyType}://{LoadedProxy.Ip}:{LoadedProxy.Port}"),
-            Credentials = LoadedProxy.Login is null || LoadedProxy.Password is null
+            Address = new Uri($"{proxyType}://{Data.Ip}:{Data.Port}"),
+            Credentials = Data.Login is null || Data.Password is null
                 ? null
-                : new NetworkCredential(LoadedProxy.Login, LoadedProxy.Password)
+                : new NetworkCredential(Data.Login, Data.Password)
         };
     }
     
-    public HttpResponseMessage? Get(string requestUrl, int retries = 3)
-    {
-        HttpResponseMessage? response = null;
-
-        for (var i = 0; i < retries; i++)
-        {
-            try
-            {
-                response = LoadedProxy.Client?.GetAsync(requestUrl).GetAwaiter().GetResult();
-                if (response is not null && response.IsSuccessStatusCode) 
-                    break;
-            }
-
-            catch
-            {
-                // ignored
-            }
-        }
-
-        return response;
-    }
+    // public HttpResponseMessage? Get(string requestUrl, int retries = 3)
+    // {
+    //     HttpResponseMessage? response = null;
+    //
+    //     for (var i = 0; i < retries; i++)
+    //     {
+    //         try
+    //         {
+    //             response = Data.Client?.GetAsync(requestUrl).GetAwaiter().GetResult();
+    //             if (response is not null && response.IsSuccessStatusCode) 
+    //                 break;
+    //         }
+    //
+    //         catch
+    //         {
+    //             // ignored
+    //         }
+    //     }
+    //
+    //     return response;
+    // }
     
     public void Validate()
     {
@@ -107,7 +109,7 @@ public class Proxy
                 break;
         }
         
-        client.Timeout = LoadedProxy.Timeout;
+        client.Timeout = Data.Timeout;
         
         try
         {
@@ -119,14 +121,13 @@ public class Proxy
                     Validate();
                 else
                 {
-                    LoadedProxy.Status.Checked = true;
+                    Data.Status.Checked = true;
                     return;
                 }
             }
             
-            LoadedProxy.Status.Checked = true;
-            LoadedProxy.Status.Valid = true;
-            LoadedProxy.Client = client;
+            Data.Status.Checked = true;
+            Data.Status.Valid = true;
         }
         
         catch (Exception)
@@ -135,7 +136,44 @@ public class Proxy
                 Validate();
 
             else
-                LoadedProxy.Status.Checked = true;
+                Data.Status.Checked = true;
         }
+    }
+
+    public static List<Proxy> GetProxyFromFile(string filePath)
+    {
+        var proxyList = new List<Proxy>();
+        var lines = Utils.BufferedReadLines(filePath);
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+            var splittedLine = trimmedLine.Split(":");
+            
+            if (splittedLine.Length <= 1)
+                continue;
+            
+            string ip;
+            int port;
+            string? login = null;
+            string? password = null;
+
+            ip = splittedLine[0];
+            var portPase = int.TryParse(splittedLine[1], out var parsedPort);
+            
+            if (!portPase) 
+                continue;
+
+            port = parsedPort;
+            if (splittedLine.Length > 3)
+            {
+                login = splittedLine[2];
+                password = splittedLine[3];
+            }
+            
+            proxyList.Add(new Proxy(new ProxyObject(ip, port, login, password)));
+        }
+
+        return proxyList;
     }
 }

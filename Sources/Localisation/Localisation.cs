@@ -92,13 +92,25 @@ public class Localisation
         public string GoBack { get; set; }
         public string ThreadsNotSet { get; set; }
         public string DataFileNotSet { get; set; }
-        public string DataFileEmpty { get; set; }
+        public string DataFileNotExists { get; set; }
         public string DataFileNothingParsed { get; set; }
+        public string ProxyFileNotSet { get; set; }
+        public string ProxyFileNotExists { get; set; }
+        public string ProxyFileNothingParsed { get; set; }
+        public string ProxyTimeoutNotSet { get; set; }
         public string ParsingDataFile { get; set; }
-        public string CollectingProxy { get; set; }
+        public string ParsingProxyFile { get; set; }
         public string FromFile { get; set; }
+        public string CollectedWallets { get; set; }
+        public string CollectedProxy { get; set; }
         public string ValidatingProxy { get; set; }
+        public string ValidatedProxy { get; set; }
+        public string ValidatedProxyNothingParsed { get; set; }
         public string Fetching { get; set; }
+        public string Balance { get; set; }
+        public string Wallet { get; set; }
+        public string Mnemonic { get; set; }
+        public string PrivateKey { get; set; }
     }
     
     public class Base

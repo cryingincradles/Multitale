@@ -22,76 +22,70 @@ public class MultiWallet
         public PrivateKey(string data) => Data = data;
     }
     
-    public class ChainBase<T> where T : IWallet, new()
+    public class ChainWallet<T> where T : IWallet, new()
     {
+        private double? _cachedNetworth;
+        //private bool _networthChecked = false;
         public string Address { get; set; }
         public T Account { get; set; }
         public IHDWallet<T> Wallet { get; set; }
+        public double? Networth => _cachedNetworth;
+        public double? GetNetworth(Proxy? proxy = null)
+        {
+            var networth = Fetcher.Fetcher.GetTotal(this, proxy);
+            if (_cachedNetworth is null && networth is not null)
+                _cachedNetworth = networth;
+            //_networthChecked = true;
+            return networth;
+        }
     }
     
     public class Wallet
     {
         public Mnemonic? Mnemonic { get; set; }
         public PrivateKey? PrivateKey { get; set; }
-        public ChainBase<TronWallet>? Tron { get; set; }
-        public ChainBase<BitcoinWallet>? Bitcoin { get; set; }
-        public ChainBase<EthereumWallet> Ethereum { get; set; }
+        public ChainWallet<TronWallet> Tron { get; set; }
+        public ChainWallet<BitcoinWallet> Bitcoin { get; set; }
+        public ChainWallet<EthereumWallet> Ethereum { get; set; }
 
         public Wallet(Mnemonic mnemonic)
         {
-            AnsiConsole.MarkupLine("[red]Mnemonic Wallet[/]");
-            
             Mnemonic = mnemonic;
             
-            AnsiConsole.WriteLine(mnemonic.Data);
-            
-            Ethereum = new ChainBase<EthereumWallet>();
+            Ethereum = new ChainWallet<EthereumWallet>();
             Ethereum.Wallet = new EthereumHDWallet(mnemonic.Data, "");
             Ethereum.Account = Ethereum.Wallet.GetAccountWallet(0);
             Ethereum.Address = Ethereum.Account.Address;
             
-            AnsiConsole.WriteLine(Ethereum.Address);
-            
-            Tron = new ChainBase<TronWallet>();
+            Tron = new ChainWallet<TronWallet>();
             Tron.Wallet = new TronHDWallet(mnemonic.Data);
             Tron.Account = Tron.Wallet.GetAccountWallet(0);
             Tron.Address = Tron.Account.Address;
-
-            AnsiConsole.WriteLine(Tron.Address);
             
-            Bitcoin = new ChainBase<BitcoinWallet>();
+            Bitcoin = new ChainWallet<BitcoinWallet>();
             Bitcoin.Wallet = new BitcoinHDWallet(mnemonic.Data, "");
             Bitcoin.Account = Bitcoin.Wallet.GetAccountWallet(0);
             Bitcoin.Address = Bitcoin.Account.Address;
-
-            AnsiConsole.WriteLine(Bitcoin.Address + "\n");
         }
 
         public Wallet(PrivateKey privateKey)
         {
-            //AnsiConsole.MarkupLine("[yellow]Private Key Wallet[/]");
-            
             PrivateKey = privateKey;
             
-            //AnsiConsole.WriteLine(privateKey.Data);
-            
-            Ethereum = new ChainBase<EthereumWallet>();
+            Ethereum = new ChainWallet<EthereumWallet>();
             Ethereum.Account = new EthereumWallet(privateKey.Data);
             Ethereum.Address = Ethereum.Account.Address;
-
-            //AnsiConsole.WriteLine(Ethereum.Address);
+            //Ethereum.GetNetworth();
             
-            Tron = new ChainBase<TronWallet>();
+            Tron = new ChainWallet<TronWallet>();
             Tron.Account = new TronWallet(privateKey.Data);
             Tron.Address = Tron.Account.Address;
-
-            //AnsiConsole.WriteLine(Tron.Address);
+            //Tron.Process();
             
-            Bitcoin = new ChainBase<BitcoinWallet>();
+            Bitcoin = new ChainWallet<BitcoinWallet>();
             Bitcoin.Account = new BitcoinWallet(privateKey.Data);
             Bitcoin.Address = Bitcoin.Account.Address;
-            
-            //AnsiConsole.WriteLine(Bitcoin.Address + "\n");
+            //Bitcoin.Process();
         }
     }
 
@@ -130,7 +124,7 @@ public class MultiWallet
             }
         }
 
-        return wallets;
+        return wallets.DistinctBy(wallet => wallet.Ethereum.Address).ToList();
     }
 
     public static bool IsValidMnemonic(string mnemonic)

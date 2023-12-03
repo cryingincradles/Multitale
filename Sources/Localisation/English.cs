@@ -55,15 +55,27 @@ public class English : Localisation.Base
             Fetcher = "Fetcher",
             ThreadsNotSet = "Threads amount is not set in the settings",
             DataFileNotSet = "Data file is not set in the settings",
-            DataFileEmpty = "Data file is empty",
+            DataFileNotExists = "Data file is not exists",
             DataFileNothingParsed = "No one line was parsed from data file",
+            ProxyFileNotSet = "The proxy file is not set in the settings",
+            ProxyFileNotExists = "Proxy file does not exist or was not found",
+            ProxyFileNothingParsed = "No any proxy from the specified file has been parsed",
+            ProxyTimeoutNotSet = "Proxy timeout not set in the settings",
             ProxyScrapper = "Proxy Scrapper",
             ProxyChecker = "Proxy Checker",
             ParsingDataFile = "Parsing data-file lines",
-            CollectingProxy = "Collecting proxy",
+            ParsingProxyFile = "Collecting proxy",
             FromFile = "From file",
+            CollectedWallets = "Wallets collected",
+            CollectedProxy = "Proxy collected",
             ValidatingProxy = "Validating proxy",
-            Fetching = "Fetching lines"
+            ValidatedProxy = "Valid proxy count",
+            ValidatedProxyNothingParsed = "No any valid proxy was parsed",
+            Fetching = "Fetching wallets",
+            Balance = "Balance",
+            Wallet = "Wallet",
+            Mnemonic = "Mnemonic",
+            PrivateKey = "Key"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {

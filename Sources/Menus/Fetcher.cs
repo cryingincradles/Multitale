@@ -29,6 +29,9 @@ public class Fetcher
     public static void Start()
     {
         AnsiConsole.MarkupLine($"\n [{Program.Theme.DefaultColor} on {Program.Theme.BaseColor}] {Program.Locale.LauncherMenu.Fetcher} [/] [{Program.Theme.TintColor}]{Program.Locale.LauncherMenu.StartTint}[/]\n");
+     
+        AnsiConsole.Cursor.Hide();
+        Console.CursorVisible = false;
         
         if (Program.Settings.Fetcher.Threads is null)
             AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ThreadsNotSet}");
@@ -36,20 +39,111 @@ public class Fetcher
         if (Program.Settings.Fetcher.FilePath is null)
             AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.DataFileNotSet}");
         
+        if (Program.Settings.Main.ProxyPath is null)
+            AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyFileNotSet}");
+        
+        if (Program.Settings.Main.ProxyTimeout is null)
+            AnsiConsole.WriteLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyTimeoutNotSet}");
+        
         if (Program.Settings.Fetcher.Threads is not null && Program.Settings.Fetcher.FilePath is not null)
         {
-            AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]~[/] {Program.Locale.LauncherMenu.ParsingDataFile}");
-            var dataFileLines = Utils.BufferedReadLines(Program.Settings.Fetcher.FilePath);
+            var dataFileExists = File.Exists(Program.Settings.Fetcher.FilePath);
+            var proxyFileExists = File.Exists(Program.Settings.Main.ProxyPath);
             
-            if (dataFileLines.Count != 0)
-            {
-                var wallets = MultiWallet.GetWalletsFromFile(Program.Settings.Fetcher.FilePath);
-                AnsiConsole.WriteLine(wallets.Count);
-            }
+            if (!proxyFileExists && Program.Settings.Main.ProxyPath is not null)
+                AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyFileNotExists}");
+            if (!dataFileExists)
+                AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.DataFileNotExists}");
             
-            else
+            if (proxyFileExists && dataFileExists)
             {
-                AnsiConsole.MarkupLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.DataFileEmpty}");
+                AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]@[/] {Program.Locale.LauncherMenu.ParsingDataFile}");
+                var wallets = new List<MultiWallet.Wallet>();
+                var proxies = new List<Proxy>();
+
+                wallets = MultiWallet.GetWalletsFromFile(Program.Settings.Fetcher.FilePath);
+                AnsiConsole.MarkupLine(wallets.Count == 0
+                    ? $" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.DataFileNothingParsed}"
+                    : $" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.CollectedWallets}: {wallets.Count}");
+
+                if (Program.Settings.Main.ProxyPath is not null && proxyFileExists)
+                {
+                    proxies = Proxy.GetProxyFromFile(Program.Settings.Main.ProxyPath);
+                    AnsiConsole.MarkupLine(proxies.Count == 0
+                        ? $" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyFileNothingParsed}"
+                        : $" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.CollectedProxy}: {proxies.Count}");
+                }
+
+                if (proxies.Count > 0 && wallets.Count > 0)
+                {
+                    AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]@[/] {Program.Locale.LauncherMenu.ValidatingProxy}");
+                    var validProxies = new List<Proxy>();
+                    Parallel.ForEach(proxies, proxy =>
+                    {
+                        proxy.Validate();
+                        if (proxy.Data.Status.Valid)
+                            validProxies.Add(proxy);
+                    });
+                    
+                    AnsiConsole.MarkupLine(validProxies.Count == 0
+                        ? $" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ValidatedProxyNothingParsed}"
+                        : $" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.ValidatedProxy}: {validProxies.Count}");
+
+                    if (validProxies.Count > 0)
+                    {
+                        AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]@[/] {Program.Locale.LauncherMenu.Fetching}\n");
+                        var semaphore = new SemaphoreSlim((int)Program.Settings.Fetcher.Threads);
+                        var tasks = new List<Task>();
+                        var proxyRandom = new Random();
+                        
+                        foreach (var wallet in wallets)
+                        {
+                            var walletIndex = wallets.IndexOf(wallet);
+                            semaphore.Wait();
+                            
+                            var task = new Task(() =>
+                            {
+                                try
+                                {
+                                    double? cachedErcNetworth = null;
+                                    double? cachedTrcNetworth = null;
+                                    
+                                    while (true)
+                                    {
+                                        var proxyIndex = proxyRandom.Next(0, validProxies.Count - 1);
+                                        var proxy = validProxies[proxyIndex];
+                                        var networthTrc = cachedTrcNetworth ?? wallet.Tron.GetNetworth(proxy);;
+                                        var networthErc = cachedErcNetworth ?? wallet.Ethereum.GetNetworth(proxy);
+
+                                        if (networthErc is not null)
+                                            cachedErcNetworth = networthErc;
+
+                                        if (networthTrc is not null)
+                                            cachedTrcNetworth = networthTrc;
+                                        
+                                        if (networthErc == null || networthTrc == null && (cachedErcNetworth is null || cachedTrcNetworth is null))
+                                            continue;
+                                        
+                                        AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.Wallet} #{walletIndex + 1}" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]|[/] ERC {Program.Locale.LauncherMenu.Balance}: {cachedErcNetworth}" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]|[/] TRC {Program.Locale.LauncherMenu.Balance}: {cachedTrcNetworth}" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]+[/] {(wallet.Mnemonic is not null ? $"{Program.Locale.LauncherMenu.Mnemonic}: {wallet.Mnemonic.Data}" : $"{Program.Locale.LauncherMenu.PrivateKey}: {wallet.PrivateKey!.Data}")}\n");
+                                        break;
+                                    }
+                                }
+                                finally
+                                {
+                                    semaphore.Release();
+                                }
+                            });
+                            
+                            task.Start();
+                            tasks.Add(task);
+                        }
+
+                        Task.WhenAll(tasks.ToArray()).GetAwaiter().GetResult();
+                    }
+                }
             }
         }
         
