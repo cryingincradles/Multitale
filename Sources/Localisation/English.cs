@@ -75,7 +75,8 @@ public class English : Localisation.Base
             Balance = "Balance",
             Wallet = "Wallet",
             Mnemonic = "Mnemonic",
-            PrivateKey = "Key"
+            PrivateKey = "Key",
+            TotalBalance = "Total balance"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {

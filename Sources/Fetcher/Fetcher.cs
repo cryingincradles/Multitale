@@ -3,7 +3,6 @@ using HDWallet.Core;
 using HDWallet.Ethereum;
 using HDWallet.Tron;
 using Multitale.Sources.Helpers;
-using Spectre.Console;
 
 namespace Multitale.Sources.Fetcher;
 

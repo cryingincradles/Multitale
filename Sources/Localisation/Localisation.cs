@@ -111,6 +111,7 @@ public class Localisation
         public string Wallet { get; set; }
         public string Mnemonic { get; set; }
         public string PrivateKey { get; set; }
+        public string TotalBalance { get; set; }
     }
     
     public class Base

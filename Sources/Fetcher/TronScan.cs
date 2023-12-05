@@ -35,7 +35,7 @@ public class TronScan
                     networth = parsedNetworth;
             }
         }
-        catch (Exception ex)
+        catch
         {
             // ignored
         }

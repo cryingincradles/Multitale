@@ -75,7 +75,8 @@ public class Russian : Localisation.Base
             Balance = "Баланс",
             Wallet = "Кошелёк",
             Mnemonic = "Фраза",
-            PrivateKey = "Ключ"
+            PrivateKey = "Ключ",
+            TotalBalance = "Суммарный баланс"
         };
         SettingsMenu = new Localisation.SettingsMenu
         {

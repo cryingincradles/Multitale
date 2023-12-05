@@ -53,28 +53,6 @@ public class Proxy
         };
     }
     
-    // public HttpResponseMessage? Get(string requestUrl, int retries = 3)
-    // {
-    //     HttpResponseMessage? response = null;
-    //
-    //     for (var i = 0; i < retries; i++)
-    //     {
-    //         try
-    //         {
-    //             response = Data.Client?.GetAsync(requestUrl).GetAwaiter().GetResult();
-    //             if (response is not null && response.IsSuccessStatusCode) 
-    //                 break;
-    //         }
-    //
-    //         catch
-    //         {
-    //             // ignored
-    //         }
-    //     }
-    //
-    //     return response;
-    // }
-    
     public void Validate()
     {
         var requestUrl = "https://httpbin.org/get";
@@ -140,7 +118,7 @@ public class Proxy
         }
     }
 
-    public static List<Proxy> GetProxyFromFile(string filePath)
+    public static List<Proxy> GetProxyFromFile(string filePath, int timeoutMs)
     {
         var proxyList = new List<Proxy>();
         var lines = Utils.BufferedReadLines(filePath);
@@ -171,7 +149,7 @@ public class Proxy
                 password = splittedLine[3];
             }
             
-            proxyList.Add(new Proxy(new ProxyObject(ip, port, login, password)));
+            proxyList.Add(new Proxy(new ProxyObject(ip, port, login, password, timeoutMs)));
         }
 
         return proxyList;

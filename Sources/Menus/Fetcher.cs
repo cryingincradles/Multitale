@@ -45,7 +45,7 @@ public class Fetcher
         if (Program.Settings.Main.ProxyTimeout is null)
             AnsiConsole.WriteLine($" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyTimeoutNotSet}");
         
-        if (Program.Settings.Fetcher.Threads is not null && Program.Settings.Fetcher.FilePath is not null)
+        if (Program.Settings.Fetcher.Threads is not null && Program.Settings.Fetcher.FilePath is not null && Program.Settings.Main.ProxyTimeout is not null)
         {
             var dataFileExists = File.Exists(Program.Settings.Fetcher.FilePath);
             var proxyFileExists = File.Exists(Program.Settings.Main.ProxyPath);
@@ -68,7 +68,7 @@ public class Fetcher
 
                 if (Program.Settings.Main.ProxyPath is not null && proxyFileExists)
                 {
-                    proxies = Proxy.GetProxyFromFile(Program.Settings.Main.ProxyPath);
+                    proxies = Proxy.GetProxyFromFile(Program.Settings.Main.ProxyPath, (int)Program.Settings.Main.ProxyTimeout);
                     AnsiConsole.MarkupLine(proxies.Count == 0
                         ? $" [{Program.Theme.WarningColor}]![/] {Program.Locale.LauncherMenu.ProxyFileNothingParsed}"
                         : $" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.CollectedProxy}: {proxies.Count}");
@@ -95,10 +95,25 @@ public class Fetcher
                         var semaphore = new SemaphoreSlim((int)Program.Settings.Fetcher.Threads);
                         var tasks = new List<Task>();
                         var proxyRandom = new Random();
+                        var currentWallet = 1;
+                        var writeLocker = new object();
+                        var launchTime = DateTime.Now;
+                        var sessionDir = $"{launchTime:yyyy.MM.dd_HH-mm-ss}";
+                        var emptyFile = $"./Results/{sessionDir}/Empty.txt";
+                        var balancesFile = $"./Results/{sessionDir}/Balances.txt";
+                        var logoText = $"\n{Program.Logo}\n Always opensource, free and yours\n https://t.me/multitale\n\n";
+                        var balancesCounter = 0;
+                        var emptyCounter = 0;
+                        
+                        if (!Directory.Exists("./Results"))
+                            Directory.CreateDirectory("./Results");
+                        
+                        Program.Log.Information("Fetcher started!");
                         
                         foreach (var wallet in wallets)
                         {
-                            var walletIndex = wallets.IndexOf(wallet);
+                            var attempts = 1;
+                            var walletIndex = wallets.IndexOf(wallet) + 1;
                             semaphore.Wait();
                             
                             var task = new Task(() =>
@@ -112,7 +127,7 @@ public class Fetcher
                                     {
                                         var proxyIndex = proxyRandom.Next(0, validProxies.Count - 1);
                                         var proxy = validProxies[proxyIndex];
-                                        var networthTrc = cachedTrcNetworth ?? wallet.Tron.GetNetworth(proxy);;
+                                        var networthTrc = cachedTrcNetworth ?? wallet.Tron.GetNetworth(proxy);
                                         var networthErc = cachedErcNetworth ?? wallet.Ethereum.GetNetworth(proxy);
 
                                         if (networthErc is not null)
@@ -120,14 +135,67 @@ public class Fetcher
 
                                         if (networthTrc is not null)
                                             cachedTrcNetworth = networthTrc;
-                                        
-                                        if (networthErc == null || networthTrc == null && (cachedErcNetworth is null || cachedTrcNetworth is null))
+
+                                        if (networthErc == null || networthTrc == null &&
+                                            (cachedErcNetworth is null || cachedTrcNetworth is null))
+                                        {
+                                            var logAttempt = attempts % 20 == 0;
+                                            if (logAttempt)
+                                                Program.Log.Information($"Wallet {walletIndex} [{(wallet.Mnemonic is not null ? wallet.Mnemonic.Data : wallet.PrivateKey!.Data)}] attempt {attempts} to parse [ERC: {cachedErcNetworth is not null}, TRC: {cachedTrcNetworth is not null}]");
+                                            attempts++;
+                                            Task.Delay(100);
                                             continue;
+                                        }
+
+                                        var totalBalance = Math.Round((double)cachedErcNetworth! + (double)cachedTrcNetworth!, 2);
                                         
-                                        AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.Wallet} #{walletIndex + 1}" + "\n" +
-                                                               $" [{Program.Theme.BaseColor}]|[/] ERC {Program.Locale.LauncherMenu.Balance}: {cachedErcNetworth}" + "\n" +
-                                                               $" [{Program.Theme.BaseColor}]|[/] TRC {Program.Locale.LauncherMenu.Balance}: {cachedTrcNetworth}" + "\n" +
+                                        Program.Log.Information($"Wallet {walletIndex} [{(wallet.Mnemonic is not null ? wallet.Mnemonic.Data : wallet.PrivateKey!.Data)}] parsed in {attempts} attempts");
+                                        
+                                        AnsiConsole.MarkupLine($" [{Program.Theme.BaseColor}]+[/] {Program.Locale.LauncherMenu.Wallet} #{walletIndex} ({currentWallet}/{wallets.Count})" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]├[/] ERC-20" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]│  ├[/] {wallet.Ethereum.Address}" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]│  └[/] {Program.Locale.LauncherMenu.Balance}: {cachedErcNetworth}$" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]├[/] TRC-20" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]│  ├[/] {wallet.Tron.Address}" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]│  └[/] {Program.Locale.LauncherMenu.Balance}: {cachedTrcNetworth}$" + "\n" +
+                                                               $" [{Program.Theme.BaseColor}]├[/] {Program.Locale.LauncherMenu.TotalBalance}: {totalBalance}$" + "\n" +
                                                                $" [{Program.Theme.BaseColor}]+[/] {(wallet.Mnemonic is not null ? $"{Program.Locale.LauncherMenu.Mnemonic}: {wallet.Mnemonic.Data}" : $"{Program.Locale.LauncherMenu.PrivateKey}: {wallet.PrivateKey!.Data}")}\n");
+                                        currentWallet++;
+                                        
+                                        lock (writeLocker)
+                                        {
+                                            var isKeyWallet = wallet.Mnemonic is null;
+                                            var resultString = $"Wallet #{walletIndex}\n" +
+                                                               $"{(isKeyWallet ? $"Key: {wallet.PrivateKey!.Data}" : $"Mnemonic: {wallet.Mnemonic!.Data}")} \n" +
+                                                               "Balances\n" +
+                                                               $"├ TOTAL: {totalBalance}$\n" +
+                                                               $"├ TRC ({cachedTrcNetworth}$): {wallet.Tron.Address}\n" +
+                                                               $"└ ERC ({cachedErcNetworth}$): {wallet.Ethereum.Address}\n\n";
+                                            
+                                            if (!Directory.Exists($"./Results/{sessionDir}"))
+                                                Directory.CreateDirectory($"./Results/{sessionDir}");
+
+                                            if (totalBalance == 0)
+                                            {
+                                                emptyCounter++;
+                                                
+                                                if (!File.Exists(emptyFile))
+                                                    File.AppendAllText(emptyFile, logoText);
+                                                
+                                                File.AppendAllText(emptyFile, resultString);
+                                            }
+
+                                            else
+                                            {
+                                                balancesCounter++;
+                                                
+                                                if (!File.Exists(balancesFile))
+                                                    File.AppendAllText(balancesFile, logoText);
+                                                
+                                                File.AppendAllText(balancesFile, resultString);
+                                            }
+                                        }
+                                        
                                         break;
                                     }
                                 }
@@ -140,8 +208,15 @@ public class Fetcher
                             task.Start();
                             tasks.Add(task);
                         }
-
+                        
                         Task.WhenAll(tasks.ToArray()).GetAwaiter().GetResult();
+
+                        var totalBarChart = new BarChart()
+                            .Width(60)
+                            .AddItem(" With balance", balancesCounter, Style.Parse(Program.Theme.AccentColor).Foreground)
+                            .AddItem(" Empty", emptyCounter, Style.Parse(Program.Theme.BaseColor).Foreground);
+                        
+                        AnsiConsole.Write(totalBarChart);
                     }
                 }
             }

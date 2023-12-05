@@ -1,10 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿#pragma warning disable
+
+using System.Text.RegularExpressions;
 using HDWallet.Bitcoin;
 using HDWallet.Core;
 using HDWallet.Ethereum;
 using HDWallet.Tron;
 using Nethereum.Web3.Accounts;
-using Spectre.Console;
 
 namespace Multitale.Sources.Helpers;
 
@@ -25,17 +26,20 @@ public class MultiWallet
     public class ChainWallet<T> where T : IWallet, new()
     {
         private double? _cachedNetworth;
-        //private bool _networthChecked = false;
+
         public string Address { get; set; }
         public T Account { get; set; }
-        public IHDWallet<T> Wallet { get; set; }
+        public IHDWallet<T>? Wallet { get; set; }
         public double? Networth => _cachedNetworth;
         public double? GetNetworth(Proxy? proxy = null)
         {
             var networth = Fetcher.Fetcher.GetTotal(this, proxy);
             if (_cachedNetworth is null && networth is not null)
+            {
+                networth = Math.Round((double)networth, 2);
                 _cachedNetworth = networth;
-            //_networthChecked = true;
+            }
+            
             return networth;
         }
     }
@@ -75,17 +79,14 @@ public class MultiWallet
             Ethereum = new ChainWallet<EthereumWallet>();
             Ethereum.Account = new EthereumWallet(privateKey.Data);
             Ethereum.Address = Ethereum.Account.Address;
-            //Ethereum.GetNetworth();
             
             Tron = new ChainWallet<TronWallet>();
             Tron.Account = new TronWallet(privateKey.Data);
             Tron.Address = Tron.Account.Address;
-            //Tron.Process();
             
             Bitcoin = new ChainWallet<BitcoinWallet>();
             Bitcoin.Account = new BitcoinWallet(privateKey.Data);
             Bitcoin.Address = Bitcoin.Account.Address;
-            //Bitcoin.Process();
         }
     }
 

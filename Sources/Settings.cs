@@ -32,7 +32,8 @@ public class Settings
             Program.Log.Warning("Settings file is empty. Loading defaults...");
             _settingsIni.RewriteAll(Defaults);
             Program.Log.Warning("Settings defaults loaded");
-        };
+        }
+
         Fetcher = new IFetcher();
         Main = new IMain();
         Decryptor = new IDecoder();

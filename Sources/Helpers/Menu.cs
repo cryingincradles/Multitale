@@ -1,8 +1,4 @@
-﻿using System.ComponentModel;
-using System.Globalization;
-using Spectre.Console;
-
-namespace Multitale.Sources.Helpers;
+﻿namespace Multitale.Sources.Helpers;
 
 public class Menu
 {
