@@ -10,20 +10,20 @@ I, the creator, am not responsible for any actions, and or damages, caused by th
 
 It is required to have .NET 7.0 Runtime installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/7.0
 
-* Tested OS: Windows 7 (SP1) and newer, Linux
-* Tested .NET: SDK/Runtime 7.0.5. Errors may occur on older versions
+* Tested OS: Windows 8.1 and newer, Linux
+* Tested .NET: SDK/Runtime 7.0.4 and later Errors may occur on older versions
 
-## How does it works
+## Documentation
 
-1. First of all compile & run or run compiled program
-2. Copy & Paste path to work & proxy folder in the settings
-3. Wait for results in the program directory
+Find more info in our GitBook
+
+* Russian: https://multitale.gitbook.io/dokumentaciya/
+* English: https://multitale.gitbook.io/documentation/
 
 ## Used Libs
 
-1. Nethereum
-2. Org.BouncyCastle
-3. Spectre.Console
-4. Newtonsoft.Json
-5. PuppeteerSharp
-6. Leaf.xNet
+1. [Nethereum](https://github.com/Nethereum/Nethereum)
+2. [Org.BouncyCastle](https://www.bouncycastle.org/)
+3. [Spectre.Console](https://github.com/spectreconsole/spectre.console)
+4. [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
+5. [HDWallet](https://github.com/farukterzioglu/HDWallet)
