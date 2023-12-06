@@ -6,6 +6,10 @@ Cryptocurrency wallet tool program written in C# .NET 7.0
 
 I, the creator, am not responsible for any actions, and or damages, caused by this software. You bear the full responsibility of your actions and acknowledge that this software was created for educational purposes only. This software's main purpose is NOT to be used maliciously, or on any system that you do not own, or have the right to use. By using this software, you automatically agree to the above
 
+## ATTENTION
+
+New sources will be moved to main branch. If you want to download old sources with all features - use sources from previous commits
+
 ## Requirements
 
 It is required to have .NET 7.0 Runtime installed in order to compile and run the program. You can download it here https://dotnet.microsoft.com/en-us/download/dotnet/7.0
