@@ -1,47 +1,100 @@
-﻿using Spectre.Console;
-using System.Runtime.InteropServices;
+﻿#pragma warning disable CS8618
+
+using Multitale.Sources;
+using Multitale.Sources.Localisation;
+using Multitale.Sources.Themes;
+using Serilog;
+using Spectre.Console;
+
+namespace Multitale;
 
 class Program
 {
-    public static string CurrentRelease = "v0.4.0-alpha";
-
-    public static void ShowLogo()
+    public static ILogger Log { get; private set; }
+    public static Settings Settings { get; set; }
+    
+    public const string Logo = @" |\/|     | _|_ o _|_  _. |  _ " + "\n" + 
+                               @" |  | |_| |  |_ |  |_ (_| | (/_";
+    
+    private static void BuildConsole(bool rebuild = false)
     {
-        AnsiConsole.Write(new Markup("[royalblue1]" +
-    "  __  __      _ _   _ _        _     \r\n " +
-    "|  \\/  |_  _| | |_|_| |_ __ _| |___ \r\n " +
-    "| |\\/| | || | |  _| |  _/ _` | / -_)\r\n " +
-    "|_|  |_|\\_,_|_|\\__|_|\\__\\__,_|_\\___|[/]\r\n" +
-    $" {CurrentRelease}  [mediumpurple]https://t.me/multitale[/]\r\n\n"));
+        if (rebuild)
+        {
+            AnsiConsole.Write("\x1b[1;1H\x1b[0J");
+            Log.Information("Updating console");
+        }
+
+        else
+        {
+            Log.Information("Setting up console");
+            
+            AnsiConsole.Clear();
+            AnsiConsole.Cursor.Hide();
+            
+            Console.Title = "Multitale";
+            Console.CursorVisible = false;
+        }
+        
+        ShowLogo();
+    }
+    
+    private static void BuildLogger()
+    {
+        Log = new LoggerConfiguration()
+            .WriteTo.File($"Logs/Log_{DateTime.Now:yyyy.MM.dd_HH-mm-ss}.txt",
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss:ms} [{Level:u3}] => {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+        Log.Information("Logger loaded");
     }
 
+    private static void BuildLocalisation() => Localisation.Build();
+
+    private static void BuildThemes() => Themes.Build();
+    
+    // TODO Add validating for current values
+    private static void BuildSettings() => Settings = new Settings();
+
+    public static void ShowLogo() => AnsiConsole.MarkupLine($"\n[{Theme.BaseColor}]{Logo}[/]");
+    
+    public static Localisation.Base Locale
+    {
+        get
+        {
+            var localeManager = new Localisation.Manager();
+            if (Settings.Main.Language is null)
+                return localeManager.GetLocale(Localisation.DefaultLocaleName);
+            
+            var language = localeManager.GetLocale(Settings.Main.Language);
+            return language;
+        }
+    }
+    
+    public static Themes.Base Theme
+    {
+        get
+        {
+            var themeManager = new Themes.Manager();
+            if (Settings.Main.Theme is null)
+                return themeManager.GetTheme(Themes.DefaultTheme.GetType().Name);
+            
+            var language = themeManager.GetTheme(Settings.Main.Theme);
+            return language;
+        }
+    }
+
+    public static void RebuildConsole() => BuildConsole(true);
+    
     public static void Main()
     {
-        Console.Title = "Multitale ~";
+        BuildLogger();
+        BuildSettings();
+        BuildLocalisation();
+        BuildThemes();
+        BuildConsole();
+        
+        Log.Information("Multitale loaded!");
 
-        bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-        if (IsWindows)
-        {
-            const int DesiredWidth = 120;
-            const int DesiredHeight = 30;
-
-            Console.SetWindowSize(Math.Min(Console.LargestWindowWidth, DesiredWidth), Math.Min(Console.LargestWindowHeight, DesiredHeight));
-            Console.SetBufferSize(DesiredWidth, DesiredHeight);
-        }
-
-        try
-        {
-            Console.CursorVisible = false;
-            Utils.IniFile Settings = new("Settings.ini");
-            if (Settings.IsEmpty()) Utils.LoadDefaults();
-
-            Menu.Main.Show();
-        }
-
-        catch (Exception e)
-        {
-            Console.WriteLine(e.ToString());
-        }
+        Sources.Menus.Home.Show();
+        Console.ReadKey(false);
     }
 }
