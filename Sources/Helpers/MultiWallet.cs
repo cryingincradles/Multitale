@@ -57,35 +57,37 @@ public class MultiWallet
             Mnemonic = mnemonic;
             
             Ethereum = new ChainWallet<EthereumWallet>();
-            Ethereum.Wallet = new EthereumHDWallet(mnemonic.Data, "");
+            Ethereum.Wallet = new EthereumHDWallet(Mnemonic.Data, "");
             Ethereum.Account = Ethereum.Wallet.GetAccountWallet(0);
             Ethereum.Address = Ethereum.Account.Address;
             
             Tron = new ChainWallet<TronWallet>();
-            Tron.Wallet = new TronHDWallet(mnemonic.Data);
+            Tron.Wallet = new TronHDWallet(Mnemonic.Data);
             Tron.Account = Tron.Wallet.GetAccountWallet(0);
             Tron.Address = Tron.Account.Address;
             
             Bitcoin = new ChainWallet<BitcoinWallet>();
-            Bitcoin.Wallet = new BitcoinHDWallet(mnemonic.Data, "");
+            Bitcoin.Wallet = new BitcoinHDWallet(Mnemonic.Data, "");
             Bitcoin.Account = Bitcoin.Wallet.GetAccountWallet(0);
             Bitcoin.Address = Bitcoin.Account.Address;
         }
 
         public Wallet(PrivateKey privateKey)
         {
-            PrivateKey = privateKey;
+            PrivateKey = privateKey.Data.StartsWith("0x") 
+                ? new PrivateKey(privateKey.Data[2..]) 
+                : privateKey;
             
             Ethereum = new ChainWallet<EthereumWallet>();
-            Ethereum.Account = new EthereumWallet(privateKey.Data);
+            Ethereum.Account = new EthereumWallet(PrivateKey.Data);
             Ethereum.Address = Ethereum.Account.Address;
             
             Tron = new ChainWallet<TronWallet>();
-            Tron.Account = new TronWallet(privateKey.Data);
+            Tron.Account = new TronWallet(PrivateKey.Data);
             Tron.Address = Tron.Account.Address;
             
             Bitcoin = new ChainWallet<BitcoinWallet>();
-            Bitcoin.Account = new BitcoinWallet(privateKey.Data);
+            Bitcoin.Account = new BitcoinWallet(PrivateKey.Data);
             Bitcoin.Address = Bitcoin.Account.Address;
         }
     }

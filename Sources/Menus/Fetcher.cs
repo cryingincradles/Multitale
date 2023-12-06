@@ -104,6 +104,7 @@ public class Fetcher
                         var logoText = $"\n{Program.Logo}\n Always opensource, free and yours\n https://t.me/multitale\n\n";
                         var balancesCounter = 0;
                         var emptyCounter = 0;
+                        //var warnThrown = false;
                         
                         if (!Directory.Exists("./Results"))
                             Directory.CreateDirectory("./Results");
