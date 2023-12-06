@@ -8,7 +8,7 @@ I, the creator, am not responsible for any actions, and or damages, caused by th
 
 ## ATTENTION
 
-New sources will be moved to main branch. If you want to download old sources with all features - use sources from previous commits
+New sources was moved to the main branch. If you want to download old sources with all features - use sources from previous commits
 
 ## Requirements
 
