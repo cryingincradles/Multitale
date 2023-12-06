@@ -24,6 +24,14 @@ Find more info in our GitBook
 * Russian: https://multitale.gitbook.io/dokumentaciya/
 * English: https://multitale.gitbook.io/documentation/
 
+## Let this project stay alive
+
+Make your pull requests to this repository or donate to help developers still be motivated in it
+* ETH: 0x375c1A4CcC41FcB2d35122aDDA008A8ecD384333
+* BTC: bc1ql3thytsud4x9nulym3xkpmppv5eh8cj84tqsnp
+* LTC: LaX2ZRgDwAWqsYhHLvZDc3xYz1sA2LEFuM
+* USD: TH2n3dQ8Jd2mzvoGatkpBPz5CHRhNTmnan
+
 ## Used Libs
 
 1. [Nethereum](https://github.com/Nethereum/Nethereum)
